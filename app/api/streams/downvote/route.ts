@@ -1,0 +1,47 @@
+import prisma from '@/app/lib/db'
+import { UpVoteSchema } from '@/app/lib/types'
+import { getServerSession } from 'next-auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { use } from 'react'
+
+export async function POST(req: NextRequest) {
+   const session = await getServerSession()
+
+   // Find way to remove db call
+   const user = await prisma.user.findFirst({
+      where: {
+         email: session?.user?.email ?? '',
+      },
+   })
+   if (!user) {
+      return NextResponse.json(
+         {
+            message: 'Unaunthenticated',
+         },
+         {
+            status: 403,
+         }
+      )
+   }
+   try {
+      const data = await req.json()
+      const parseInput = UpVoteSchema.parse(data)
+      await prisma.upVote.delete({
+         where: {
+            userId_streamId: {
+               userId: user.id,
+               streamId: data.streamId,
+            },
+         },
+      })
+   } catch (error) {
+      return NextResponse.json(
+         {
+            message: 'Error while upvoting',
+         },
+         {
+            status: 403,
+         }
+      )
+   }
+}
