@@ -14,7 +14,8 @@ import {
    Share2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { refreshStreams } from '../lib/helper'
+import { getUserId, refreshStreams } from '../lib/helper'
+import axios from 'axios'
 
 interface Video {
    id: string
@@ -52,16 +53,13 @@ export default function Dashboard() {
       refreshStreams()
    })
 
-   const handleSubmit = () => {
-      if (!inputLink.trim()) return
-
-      const newVideo: Video = {
-         id: String(Date.now()),
-         title: `New Song ${queue.length + 1}`,
-         upVotes: 0,
-         downVotes: 0,
-      }
-      setQueue([...queue, newVideo])
+   const handleSubmit = async () => {
+      console.log(inputLink)
+      const sendVideoLink = axios.post('/api/streams', {
+         data: {
+            url: inputLink,
+         },
+      })
       setInputLink('')
    }
 
@@ -81,6 +79,12 @@ export default function Dashboard() {
             )
             .sort((a, b) => b.upVotes - b.downVotes - (a.upVotes - a.downVotes))
       )
+
+      axios.get('/api/streams/upvote', {
+         data: {
+            streamId: id,
+         },
+      })
    }
 
    const playNext = () => {
