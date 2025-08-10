@@ -11,11 +11,10 @@ import {
    Plus,
    Sparkles,
    Heart,
-   ShareIcon,
-   Share,
    Share2,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { refreshStreams } from '../lib/helper'
 
 interface Video {
    id: string
@@ -47,6 +46,11 @@ export default function Dashboard() {
       },
    ])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
+
+   const REFRESH_INTERVAL_MS = 10 * 1000
+   useEffect(() => {
+      refreshStreams()
+   })
 
    const handleSubmit = () => {
       if (!inputLink.trim()) return
