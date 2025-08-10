@@ -28,9 +28,6 @@ export async function POST(req: NextRequest) {
 
       const extractedId = receivedData.split('?v=')[1]
       const youtubeData = await getYouTubeData(extractedId)
-      console.log(extractedId)
-      console.log(user)
-      console.log(youtubeData)
       try {
          const stream = await prisma.stream.create({
             data: {
@@ -45,16 +42,13 @@ export async function POST(req: NextRequest) {
                   youtubeData?.thumbnails.standard.url,
             },
          })
-
-         console.log(stream)
+         return NextResponse.json({
+            message: 'Succedd',
+            id: stream.id,
+         })
       } catch (error) {
          console.error(error)
       }
-
-      return NextResponse.json({
-         message: 'Succedd',
-         id: stream.id,
-      })
    } catch (error) {
       return NextResponse.json({
          message: 'Error while adding a stream',
@@ -74,32 +68,3 @@ export async function GET(req: NextRequest) {
       streams,
    })
 }
-
-// thumbnails: {
-//     default: {
-//       url: 'https://i.ytimg.com/vi/fLTRZFwzIsk/default.jpg',
-//       width: 120,
-//       height: 90
-//     },
-//     medium: {
-//       url: 'https://i.ytimg.com/vi/fLTRZFwzIsk/mqdefault.jpg',
-//       width: 320,
-//       height: 180
-//     },
-//     high: {
-//       url: 'https://i.ytimg.com/vi/fLTRZFwzIsk/hqdefault.jpg',
-//       width: 480,
-//       height: 360
-//     },
-//     standard: {
-//       url: 'https://i.ytimg.com/vi/fLTRZFwzIsk/sddefault.jpg',
-//       width: 640,
-//       height: 480
-//     },
-//     maxres: {
-//       url: 'https://i.ytimg.com/vi/fLTRZFwzIsk/maxresdefault.jpg',
-//       width: 1280,
-//       height: 720
-//     }
-//   }
-// }

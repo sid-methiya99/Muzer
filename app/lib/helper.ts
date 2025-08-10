@@ -10,6 +10,8 @@ export async function refreshStreams() {
             Authorization: `Bearer ${session?.accessToken}`,
          },
       })
+      const data = res.data
+      return data
    } catch (error) {
       console.error(error)
    }

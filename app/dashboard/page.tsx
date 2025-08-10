@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from 'react'
 import { getUserId, refreshStreams } from '../lib/helper'
 import axios from 'axios'
-
+// Add all types of video here
 interface Video {
    id: string
    title: string
@@ -26,32 +26,8 @@ interface Video {
 
 export default function Dashboard() {
    const [inputLink, setInputLink] = useState('')
-   const [queue, setQueue] = useState<Video[]>([
-      {
-         id: '1',
-         title: 'Bohemian Rhapsody - Queen',
-         upVotes: 12,
-         downVotes: 1,
-      },
-      {
-         id: '2',
-         title: 'Stairway to Heaven - Led Zeppelin',
-         upVotes: 8,
-         downVotes: 2,
-      },
-      {
-         id: '3',
-         title: 'Hotel California - Eagles',
-         upVotes: 15,
-         downVotes: 0,
-      },
-   ])
+   const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
-
-   const REFRESH_INTERVAL_MS = 10 * 1000
-   useEffect(() => {
-      refreshStreams()
-   })
 
    const handleSubmit = async () => {
       console.log(inputLink)
@@ -60,8 +36,23 @@ export default function Dashboard() {
             url: inputLink,
          },
       })
+      const newVideo: Video = {
+         id: String(Date.now()),
+         title: `New Song ${queue.length + 1}`,
+         upVotes: 0,
+         downVotes: 0,
+      }
+      setQueue([...queue, newVideo])
       setInputLink('')
    }
+
+   async function getData() {
+      const data = await refreshStreams()
+      console.log(data.streams)
+   }
+   useEffect(() => {
+      getData()
+   }, [handleSubmit])
 
    const handleVote = (id: string, isUpVote: boolean) => {
       setQueue(
