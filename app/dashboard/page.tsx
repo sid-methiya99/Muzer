@@ -14,83 +14,84 @@ import {
    Share2,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { getUserId, refreshStreams } from '../lib/helper'
+import { refreshStreams } from '../lib/helper'
 import axios from 'axios'
-// Add all types of video here
+import { signOut, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 interface Video {
    id: string
    title: string
-   upVotes: number
-   downVotes: number
+   upVotes?: []
+   url: string
+   active: boolean
+   type: 'Youtube'
+   smallImg: string
+   bigImg: string
+   userId: string
+   extractedId: string
+   haveVoted: boolean
+   upVote: number
 }
 
 export default function Dashboard() {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
+   const session = useSession()
+   const router = useRouter()
+
+   useEffect(() => {
+      if (session.status === 'unauthenticated') {
+         router.push('/')
+      }
+   }, [session.status, router])
 
    const handleSubmit = async () => {
       console.log(inputLink)
-      const sendVideoLink = axios.post('/api/streams', {
+      const sendVideoLink = await axios.post('/api/streams', {
          data: {
             url: inputLink,
          },
       })
-      const newVideo: Video = {
-         id: String(Date.now()),
-         title: `New Song ${queue.length + 1}`,
-         upVotes: 0,
-         downVotes: 0,
-      }
-      setQueue([...queue, newVideo])
+      await getData()
       setInputLink('')
    }
 
    async function getData() {
       const data = await refreshStreams()
-      console.log(data.streams)
+      setQueue(data)
    }
+
    useEffect(() => {
       getData()
-   }, [handleSubmit])
+   }, [])
 
    const handleVote = (id: string, isUpVote: boolean) => {
-      setQueue(
-         queue
+      setQueue((prevQueue) =>
+         [...prevQueue] // clone before sorting
             .map((video) =>
                video.id === id
                   ? {
                        ...video,
-                       upVotes: isUpVote ? video.upVotes + 1 : video.upVotes,
-                       downVotes: !isUpVote
-                          ? video.downVotes + 1
-                          : video.downVotes,
+                       haveVoted: isUpVote,
+                       upVote: isUpVote ? video.upVote + 1 : video.upVote - 1,
                     }
                   : video
             )
-            .sort((a, b) => b.upVotes - b.downVotes - (a.upVotes - a.downVotes))
+            .sort((a, b) => b.upVote - a.upVote)
       )
 
-      axios.get('/api/streams/upvote', {
-         data: {
-            streamId: id,
-         },
+      axios.post(`/api/streams/${isUpVote ? 'upvote' : 'downvote'}`, {
+         data: { streamId: id },
       })
-   }
 
+      getData()
+   }
    const playNext = () => {
       if (queue.length > 0) {
          setCurrentVideo(queue[0])
          setQueue(queue.slice(1))
       }
-   }
-
-   const getScoreColor = (upVotes: number, downVotes: number) => {
-      const score = upVotes - downVotes
-      if (score > 5) return 'text-emerald-400'
-      if (score > 0) return 'text-blue-400'
-      if (score === 0) return 'text-gray-400'
-      return 'text-red-400'
    }
 
    return (
@@ -104,42 +105,29 @@ export default function Dashboard() {
                      Muzer
                   </span>
                </div>
-
-               <button className="text-md font-medium text-white bg-purple-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2">
-                  <Share2 />
-                  Share
-               </button>
+               <div className="flex items-center gap-2">
+                  <button className="text-md font-medium text-white bg-purple-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2">
+                     <Share2 />
+                     Share
+                  </button>
+                  {session.data?.user && (
+                     <button
+                        onClick={() => {
+                           signOut()
+                        }}
+                        className="text-md font-medium  text-white  bg-purple-600 px-4 py-2 rounded-md cursor-pointer"
+                     >
+                        Logout
+                     </button>
+                  )}
+               </div>
             </nav>
          </header>
 
-         {/* Static background elements */}
-         <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl"></div>
-            <div className="absolute top-40 right-20 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl"></div>
-            <div className="absolute bottom-20 left-40 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl"></div>
-         </div>
-
          <div className="relative z-10 max-w-6xl mx-auto p-6 space-y-8">
-            {/* Header */}
-            <div className="text-center space-y-4 py-8">
-               <div className="flex items-center justify-center space-x-3 mb-4">
-                  <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-2xl">
-                     <Music className="h-8 w-8 text-white" />
-                  </div>
-                  <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                     Music Queue
-                  </h1>
-                  <Sparkles className="h-8 w-8 text-yellow-400" />
-               </div>
-               <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-                  Add your favorite tracks and let the community decide what
-                  plays next
-               </p>
-            </div>
-
             {/* Add Song Section */}
-            <Card className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:shadow-purple-500/20">
-               <CardContent className="p-6">
+            <Card className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:shadow-purple-500/20 py-2">
+               <CardContent className="p-3">
                   <div className="space-y-4">
                      <div className="relative">
                         <Input
@@ -189,29 +177,24 @@ export default function Dashboard() {
                      <h2 className="text-3xl font-bold text-white">
                         Upcoming Songs
                      </h2>
-                     <div className="px-4 py-2 bg-purple-500/20 rounded-full text-purple-300 text-sm font-medium border border-purple-400/30">
-                        {queue.length} tracks
-                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                     {queue.map((video, index) => (
+                  <div className="space-y-2 ">
+                     {queue.map((video) => (
                         <Card
                            key={video.id}
-                           className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10"
+                           className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 py-2"
                         >
-                           <CardContent className="p-6">
-                              <div className="flex items-center space-x-4">
+                           <CardContent className="p-2 ">
+                              <div className="flex items-center space-x-2">
                                  <div className="relative">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                                       <Music className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-cyan-400 to-blue-400 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
-                                       {index + 1}
-                                    </div>
+                                    <img
+                                       src={video.smallImg}
+                                       className="h-20 w-40 object-cover"
+                                    />
                                  </div>
-                                 <div className="flex-grow min-w-0">
-                                    <h3 className="font-semibold text-white text-lg truncate mb-2">
+                                 <div className="flex-grow min-w-0 ">
+                                    <h3 className="font-semibold text-white text-md truncate mb-2">
                                        {video.title}
                                     </h3>
                                     <div className="flex items-center space-x-4">
@@ -219,38 +202,22 @@ export default function Dashboard() {
                                           variant="outline"
                                           size="sm"
                                           onClick={() =>
-                                             handleVote(video.id, true)
+                                             handleVote(
+                                                video.id,
+                                                !video.haveVoted
+                                             )
                                           }
-                                          className="flex items-center space-x-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400 transition-all duration-200"
+                                          className={`flex items-center space-x-2 ${video.haveVoted ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 hover:border-red-400'} transition-all duration-200`}
                                        >
-                                          <ThumbsUp className="h-4 w-4" />
+                                          {video.haveVoted ? (
+                                             <ThumbsUp className="h-4 w-4" />
+                                          ) : (
+                                             <ThumbsDown className="h-4 w-4" />
+                                          )}
                                           <span className="font-medium">
-                                             {video.upVotes}
+                                             {video.upVote}
                                           </span>
                                        </Button>
-                                       <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() =>
-                                             handleVote(video.id, false)
-                                          }
-                                          className="flex items-center space-x-2 bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 hover:border-red-400 transition-all duration-200"
-                                       >
-                                          <ThumbsDown className="h-4 w-4" />
-                                          <span className="font-medium">
-                                             {video.downVotes}
-                                          </span>
-                                       </Button>
-                                       <div className="flex items-center space-x-2">
-                                          <span className="text-gray-400 text-sm">
-                                             Score:
-                                          </span>
-                                          <span
-                                             className={`text-sm font-bold ${getScoreColor(video.upVotes, video.downVotes)}`}
-                                          >
-                                             {video.upVotes - video.downVotes}
-                                          </span>
-                                       </div>
                                     </div>
                                  </div>
                               </div>
@@ -299,10 +266,6 @@ export default function Dashboard() {
                                     <div className="flex items-center space-x-1 text-emerald-400">
                                        <Heart className="h-4 w-4 fill-current" />
                                        <span>{currentVideo.upVotes}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-1 text-red-400">
-                                       <ThumbsDown className="h-4 w-4" />
-                                       <span>{currentVideo.downVotes}</span>
                                     </div>
                                  </div>
                               </div>

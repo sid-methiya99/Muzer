@@ -24,13 +24,40 @@ export async function POST(req: NextRequest) {
    }
    try {
       const data = await req.json()
-      const parseInput = UpVoteSchema.parse(data)
-      const res = await prisma.upVote.create({
-         data: {
-            userId: user.id,
-            streamId: data.streamId,
+      const streamId = data.data.streamId
+      try {
+         const parseInput = UpVoteSchema.safeParse(data.data)
+         if (!parseInput.success) {
+            return NextResponse.json(
+               {
+                  message: 'Error while upvoting',
+               },
+               {
+                  status: 403,
+               }
+            )
+         }
+      } catch (error) {
+         console.error(error)
+      }
+      try {
+         const res = await prisma.upVote.create({
+            data: {
+               userId: user.id,
+               streamId: streamId,
+            },
+         })
+      } catch (error) {
+         console.error(error)
+      }
+      return NextResponse.json(
+         {
+            message: 'UpVoted',
          },
-      })
+         {
+            status: 200,
+         }
+      )
    } catch (error) {
       return NextResponse.json(
          {

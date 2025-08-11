@@ -25,15 +25,42 @@ export async function POST(req: NextRequest) {
    }
    try {
       const data = await req.json()
-      const parseInput = UpVoteSchema.parse(data)
-      await prisma.upVote.delete({
-         where: {
-            userId_streamId: {
-               userId: user.id,
-               streamId: data.streamId,
+      const streamId = data.data.streamId
+      try {
+         const parseInput = UpVoteSchema.safeParse(data.data)
+         if (!parseInput.success) {
+            return NextResponse.json(
+               {
+                  message: 'Error while upvoting',
+               },
+               {
+                  status: 403,
+               }
+            )
+         }
+      } catch (error) {
+         console.error(error)
+      }
+      try {
+         const res = await prisma.upVote.delete({
+            where: {
+               userId_streamId: {
+                  userId: user.id,
+                  streamId: streamId,
+               },
             },
-         },
-      })
+         })
+         return NextResponse.json(
+            {
+               message: 'DownVoted',
+            },
+            {
+               status: 200,
+            }
+         )
+      } catch (error) {
+         console.error(error)
+      }
    } catch (error) {
       return NextResponse.json(
          {

@@ -10,7 +10,8 @@ export async function refreshStreams() {
             Authorization: `Bearer ${session?.accessToken}`,
          },
       })
-      const data = res.data
+      const data = res.data.streams
+      console.log('Receoved data from backend', data)
       return data
    } catch (error) {
       console.error(error)

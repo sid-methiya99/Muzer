@@ -43,8 +43,9 @@ export async function POST(req: NextRequest) {
             },
          })
          return NextResponse.json({
-            message: 'Succedd',
-            id: stream.id,
+            ...stream,
+            hasVoted: false,
+            upVote: 0,
          })
       } catch (error) {
          console.error(error)
