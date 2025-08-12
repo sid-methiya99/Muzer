@@ -33,16 +33,26 @@ const handler = NextAuth({
             return false
          }
       },
-      async jwt({ token, account }) {
-         // Store Google access token on first sign in
+      async jwt({ token, account, user }) {
+         // Store Google access token and userId on first sign in
+         if (account && user.email) {
+            const dbUser = await prisma.user.findUnique({
+               where: { email: user.email },
+            })
+            if (dbUser) {
+               token.userId = dbUser.id // Store your database user ID
+               token.email = dbUser.email
+            }
+         }
          if (account) {
             token.accessToken = account.access_token
          }
          return token
       },
       async session({ session, token }) {
-         // Pass access token to the client
+         // Pass both access token AND userId to the client
          session.accessToken = token.accessToken
+         session.user.id = token.userId as string // Add this line!
          return session
       },
    },

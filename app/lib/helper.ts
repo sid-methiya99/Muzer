@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { getSession } from 'next-auth/react'
 import prisma from './db'
+import { getServerSession } from 'next-auth'
 
 export async function refreshStreams() {
    try {
@@ -16,9 +17,8 @@ export async function refreshStreams() {
       console.error(error)
    }
 }
-
 export async function getUserId() {
-   const session = await getSession()
+   const session = await getServerSession()
    const userId = await prisma.user.findFirst({
       where: {
          email: session?.user?.email ?? '',
