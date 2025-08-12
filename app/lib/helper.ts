@@ -11,7 +11,6 @@ export async function refreshStreams() {
          },
       })
       const data = res.data.streams
-      console.log('Receoved data from backend', data)
       return data
    } catch (error) {
       console.error(error)

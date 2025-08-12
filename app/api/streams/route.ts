@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
       const data = await req.json()
       const receivedData = data.data.url
       const verifyReceivedData = CreateStreamSchema.safeParse(receivedData)
-      console.log(receivedData)
 
       if (!verifyReceivedData.success) {
          return NextResponse.json({

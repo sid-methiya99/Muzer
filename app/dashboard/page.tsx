@@ -18,6 +18,13 @@ import { refreshStreams } from '../lib/helper'
 import axios from 'axios'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import {
+   QueryClient,
+   useMutation,
+   useQuery,
+   useQueryClient,
+} from '@tanstack/react-query'
+type VoteParams = { id: string; isUpVote: boolean }
 interface Video {
    id: string
    title: string
@@ -39,6 +46,18 @@ export default function Dashboard() {
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
    const session = useSession()
    const router = useRouter()
+   const {
+      data: streams,
+      isLoading,
+      error,
+   } = useQuery({
+      queryKey: ['streams'],
+      queryFn: async () => {
+         const streams = await refreshStreams()
+         return streams
+      },
+   })
+   const queryClient = useQueryClient()
 
    useEffect(() => {
       if (session.status === 'unauthenticated') {
@@ -46,47 +65,54 @@ export default function Dashboard() {
       }
    }, [session.status, router])
 
-   const handleSubmit = async () => {
-      console.log(inputLink)
-      const sendVideoLink = await axios.post('/api/streams', {
-         data: {
-            url: inputLink,
-         },
-      })
-      await getData()
-      setInputLink('')
-   }
+   const mutation = useMutation({
+      mutationFn: (url: string) =>
+         axios.post('/api/streams', {
+            data: {
+               url: url,
+            },
+         }),
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ['streams'] })
+         setInputLink('')
+      },
+   })
 
    async function getData() {
-      const data = await refreshStreams()
-      setQueue(data)
+      setQueue(streams)
    }
 
    useEffect(() => {
-      getData()
-   }, [])
+      if (streams) {
+         getData()
+      }
+   }, [streams])
 
-   const handleVote = (id: string, isUpVote: boolean) => {
-      setQueue((prevQueue) =>
-         [...prevQueue] // clone before sorting
-            .map((video) =>
-               video.id === id
-                  ? {
-                       ...video,
-                       haveVoted: isUpVote,
-                       upVote: isUpVote ? video.upVote + 1 : video.upVote - 1,
-                    }
-                  : video
-            )
-            .sort((a, b) => b.upVote - a.upVote)
-      )
-
-      axios.post(`/api/streams/${isUpVote ? 'upvote' : 'downvote'}`, {
-         data: { streamId: id },
-      })
-
-      getData()
-   }
+   const handleVoteMutation = useMutation<void, Error, VoteParams>({
+      mutationFn: ({ id, isUpVote }: VoteParams) => {
+         return axios.post(`/api/streams/${isUpVote ? 'upvote' : 'downvote'}`, {
+            data: { streamId: id },
+         })
+      },
+      onMutate: ({ id, isUpVote }: VoteParams) => {
+         setQueue((prevQueue) =>
+            [...prevQueue] // clone before sorting
+               .map((video) =>
+                  video.id === id
+                     ? {
+                          ...video,
+                          haveVoted: isUpVote,
+                          upVote: isUpVote
+                             ? video.upVote + 1
+                             : video.upVote - 1,
+                       }
+                     : video
+               )
+               .sort((a, b) => b.upVote - a.upVote)
+         )
+      },
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['streams'] }),
+   })
    const playNext = () => {
       if (queue.length > 0) {
          setCurrentVideo(queue[0])
@@ -139,11 +165,12 @@ export default function Dashboard() {
                         />
                      </div>
                      <Button
-                        onClick={handleSubmit}
+                        disabled={mutation.isPending}
+                        onClick={() => mutation.mutate(inputLink)}
                         className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-lg py-6 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
                      >
                         <Plus className="mr-2 h-5 w-5" />
-                        Add to Queue
+                        {mutation.isPending ? 'Loading ...' : 'Add to Queue'}
                      </Button>
                   </div>
                </CardContent>
@@ -178,60 +205,66 @@ export default function Dashboard() {
                         Upcoming Songs
                      </h2>
                   </div>
-
-                  <div className="space-y-2 ">
-                     {queue.map((video) => (
-                        <Card
-                           key={video.id}
-                           className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 py-2"
-                        >
-                           <CardContent className="p-2 ">
-                              <div className="flex items-center space-x-2">
-                                 <div className="relative">
-                                    <img
-                                       src={video.smallImg}
-                                       className="h-20 w-40 object-cover"
-                                    />
-                                 </div>
-                                 <div className="flex-grow min-w-0 ">
-                                    <h3 className="font-semibold text-white text-md truncate mb-2">
-                                       {video.title}
-                                    </h3>
-                                    <div className="flex items-center space-x-4">
-                                       <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() =>
-                                             handleVote(
-                                                video.id,
-                                                !video.haveVoted
-                                             )
-                                          }
-                                          className={`flex items-center space-x-2 ${video.haveVoted ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 hover:border-red-400'} transition-all duration-200`}
-                                       >
-                                          {video.haveVoted ? (
-                                             <ThumbsUp className="h-4 w-4" />
-                                          ) : (
-                                             <ThumbsDown className="h-4 w-4" />
-                                          )}
-                                          <span className="font-medium">
-                                             {video.upVote}
-                                          </span>
-                                       </Button>
+                  {!isLoading ? (
+                     <div className="space-y-2 ">
+                        {queue.map((video) => (
+                           <Card
+                              key={video.id}
+                              className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 py-2"
+                           >
+                              <CardContent className="p-2 ">
+                                 <div className="flex items-center space-x-2">
+                                    <div className="relative">
+                                       <img
+                                          src={video.smallImg}
+                                          className="h-20 w-40 object-cover"
+                                       />
+                                    </div>
+                                    <div className="flex-grow min-w-0 ">
+                                       <h3 className="font-semibold text-white text-md truncate mb-2">
+                                          {video.title}
+                                       </h3>
+                                       <div className="flex items-center space-x-4">
+                                          <Button
+                                             variant="outline"
+                                             size="sm"
+                                             onClick={() =>
+                                                handleVoteMutation.mutate({
+                                                   id: video.id,
+                                                   isUpVote: !video.haveVoted,
+                                                })
+                                             }
+                                             className={`flex items-center space-x-2 ${video.haveVoted ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400' : 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 hover:border-red-400'} transition-all duration-200`}
+                                          >
+                                             {video.haveVoted ? (
+                                                <ThumbsUp className="h-4 w-4" />
+                                             ) : (
+                                                <ThumbsDown className="h-4 w-4" />
+                                             )}
+                                             <span className="font-medium">
+                                                {video.upVote}
+                                             </span>
+                                          </Button>
+                                       </div>
                                     </div>
                                  </div>
-                              </div>
-                           </CardContent>
-                        </Card>
-                     ))}
-                     {queue.length === 0 && (
-                        <div className="text-center py-12 text-gray-400">
-                           <Music className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                           <p className="text-xl">No songs in queue</p>
-                           <p>Add some tracks to get started!</p>
-                        </div>
-                     )}
-                  </div>
+                              </CardContent>
+                           </Card>
+                        ))}
+                        {queue.length === 0 && (
+                           <div className="text-center py-12 text-gray-400">
+                              <Music className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                              <p className="text-xl">No songs in queue</p>
+                              <p>Add some tracks to get started!</p>
+                           </div>
+                        )}
+                     </div>
+                  ) : (
+                     <div className="text-center py-12 text-gray-400">
+                        <Music className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                        <p className="text-xl">Loading songs</p>
+                     </div>
+                  )}
                </div>
 
                {/* Now Playing Section */}
