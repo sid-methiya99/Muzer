@@ -3,7 +3,6 @@
 import { Music, Share2 } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { ToastContainer, toast } from 'react-toastify'
-import { getUserId } from '../lib/helper'
 
 export default function Header() {
    const session = useSession()

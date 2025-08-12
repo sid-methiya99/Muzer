@@ -1,42 +1,35 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Video } from '../lib/types'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Video } from '../lib/types'
 import { useStreams } from '../hooks/useStreams'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutation'
-import Header from '../components/DashboardHeader'
-import AddSong from '../components/AddSong'
-import QueueList from '../components/QueueList'
-import NowPlaying from '../components/NowPlaying'
-
-export default function Dashboard() {
+import Header from './DashboardHeader'
+import AddSong from './AddSong'
+import QueueList from './QueueList'
+import NowPlaying from './NowPlaying'
+import { AppBar } from './AppBar'
+interface Creator {
+   creatorId: string
+}
+export function StreamView({ creatorId }: Creator) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
 
    const session = useSession()
-   const creatorId = session.data?.user?.id
-   console.log('From here: ', creatorId)
    const router = useRouter()
 
    const { data: streams, isLoading, error } = useStreams(creatorId ?? '')
-   console.log('From here: ', streams)
    const addSongMutation = useAddSongMutation(setInputLink)
    const voteMutation = useVoteMutation(setQueue)
-
-   useEffect(() => {
-      if (session.status === 'unauthenticated') {
-         router.push('/')
-      }
-   }, [session.status, router])
 
    useEffect(() => {
       if (streams) {
          setQueue(streams)
       }
-      console.log('Inside effect: ', streams)
    }, [streams])
 
    const playNext = () => {
@@ -48,7 +41,7 @@ export default function Dashboard() {
 
    return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-         <Header />
+         <AppBar />
 
          <div className="relative z-10 max-w-6xl mx-auto p-6 space-y-8">
             <AddSong
