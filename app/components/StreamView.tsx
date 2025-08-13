@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useStreams } from '../hooks/useStreams'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutation'
-import Header from './DashboardHeader'
 import AddSong from './AddSong'
 import QueueList from './QueueList'
 import NowPlaying from './NowPlaying'
@@ -18,9 +17,9 @@ export function StreamView({ creatorId }: Creator) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
+   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
    const session = useSession()
-   const router = useRouter()
 
    const { data: streams, isLoading, error } = useStreams(creatorId ?? '')
    const addSongMutation = useAddSongMutation(setInputLink)
@@ -31,6 +30,14 @@ export function StreamView({ creatorId }: Creator) {
          setQueue(streams)
       }
    }, [streams])
+
+   useEffect(() => {
+      if (!session?.data?.user) {
+         setIsLoggedIn(false)
+      } else {
+         setIsLoggedIn(true)
+      }
+   }, [session])
 
    const playNext = () => {
       if (queue.length > 0) {
@@ -48,6 +55,7 @@ export function StreamView({ creatorId }: Creator) {
                inputLink={inputLink}
                setInputLink={setInputLink}
                mutation={addSongMutation}
+               isLoggedIn={isLoggedIn}
             />
 
             <div className="grid lg:grid-cols-3 gap-8">

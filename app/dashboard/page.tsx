@@ -18,11 +18,9 @@ export default function Dashboard() {
 
    const session = useSession()
    const creatorId = session.data?.user?.id
-   console.log('From here: ', creatorId)
    const router = useRouter()
 
    const { data: streams, isLoading, error } = useStreams(creatorId ?? '')
-   console.log('From here: ', streams)
    const addSongMutation = useAddSongMutation(setInputLink)
    const voteMutation = useVoteMutation(setQueue)
 
@@ -36,7 +34,6 @@ export default function Dashboard() {
       if (streams) {
          setQueue(streams)
       }
-      console.log('Inside effect: ', streams)
    }, [streams])
 
    const playNext = () => {
@@ -55,6 +52,7 @@ export default function Dashboard() {
                inputLink={inputLink}
                setInputLink={setInputLink}
                mutation={addSongMutation}
+               isLoggedIn={true}
             />
 
             <div className="grid lg:grid-cols-3 gap-8">
