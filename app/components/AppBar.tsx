@@ -2,39 +2,46 @@
 import { Music } from 'lucide-react'
 import { signIn, signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
+import UserTypeModal from './ChooseRole'
 
 export function AppBar() {
    const session = useSession()
    return (
-      <header className="mx-5 px-4 lg:px-6 h-14 flex items-center">
+      <header className="mx-5 px-4 lg:px-6 h-14 flex items-center mt-2">
          <nav className="flex justify-between w-full">
             <Link className="flex items-center justify-center" href="#">
                <Music className="h-6 w-6 text-purple-600" />
-               <span className="ml-2 text-lg font-bold text-purple-400">
+               <span className="ml-2 text-2xl font-bold text-purple-400">
                   Muzer
                </span>
             </Link>
-
-            {session.data?.user && (
-               <button
-                  onClick={() => {
-                     signOut()
-                  }}
-                  className="text-xs font-medium  text-white  bg-purple-600 px-3 py-2 rounded-md cursor-pointer"
-               >
-                  Logout
-               </button>
-            )}
-            {!session.data?.user && (
-               <button
-                  onClick={() => {
-                     signIn()
-                  }}
-                  className="text-xs font-medium  text-white  bg-purple-600 px-3 py-2 rounded-md cursor-pointer"
-               >
-                  Signin
-               </button>
-            )}
+            <div className="flex gap-2">
+               <div>
+                  <UserTypeModal />
+               </div>
+               <div>
+                  {session.data?.user && (
+                     <button
+                        onClick={() => {
+                           signOut()
+                        }}
+                        className="text-base font-medium  text-white  bg-purple-600 px-3 py-2 rounded-md cursor-pointer"
+                     >
+                        Logout
+                     </button>
+                  )}
+                  {!session.data?.user && (
+                     <button
+                        onClick={() => {
+                           signIn()
+                        }}
+                        className="text-base font-medium  text-white  bg-purple-600 px-3 py-2 rounded-md cursor-pointer"
+                     >
+                        Signin
+                     </button>
+                  )}
+               </div>
+            </div>
          </nav>
       </header>
    )

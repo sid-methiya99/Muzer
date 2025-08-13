@@ -9,6 +9,6 @@ export function useStreams(creatorId?: string) {
          return refreshStreams(creatorId)
       },
       enabled: !!creatorId, // ⬅ don’t run until creatorId is truthy
-      refetchInterval: 1000,
+      // refetchInterval: 1000,
    })
 }
