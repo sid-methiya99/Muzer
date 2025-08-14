@@ -4,7 +4,6 @@ import { VoteParams } from '../lib/types'
 
 export function useAddSongMutation(setInputLink: (value: string) => void) {
    const queryClient = useQueryClient()
-   console.log('Control reached here')
 
    return useMutation({
       mutationFn: (url: string) =>

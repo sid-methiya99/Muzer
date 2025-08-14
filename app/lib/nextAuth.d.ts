@@ -11,6 +11,12 @@ declare module 'next-auth' {
          image?: string | null
       }
    }
+   interface Account {
+      state?: string
+   }
+   interface CustomStateData {
+      role: string
+   }
 }
 
 declare module 'next-auth/jwt' {

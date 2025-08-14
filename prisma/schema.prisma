@@ -18,9 +18,15 @@ model User {
     id       String   @id @default(uuid())
     email    String   @unique
     provider Provider
-    role     Role?
     streams  Stream[]
     UpVote   UpVote[]
+}
+
+model Streamer {
+    id       String   @id @default(uuid())
+    email    String   @unique
+    provider Provider
+    streams  Stream[]
 }
 
 model Stream {
@@ -35,6 +41,8 @@ model Stream {
     upVotes     UpVote[]
     userId      String
     user        User       @relation(fields: [userId], references: [id])
+    Streamer    Streamer   @relation(fields: [streamerId], references: [id])
+    streamerId  String
 }
 
 model UpVote {
@@ -50,11 +58,6 @@ model UpVote {
 enum StreamType {
     Spotify
     Youtube
-}
-
-enum Role {
-    Streamer
-    EndUser
 }
 
 enum Provider {

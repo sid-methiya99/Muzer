@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import prisma from '@/app/lib/db'
+import { cookies } from 'next/headers'
 
 const handler = NextAuth({
    providers: [
@@ -16,17 +17,31 @@ const handler = NextAuth({
    ],
    secret: process.env.NEXTAUTH_SECRET ?? 'secret',
    callbacks: {
-      async signIn({ user }) {
+      async signIn({ user, account }) {
+         const cookieStore = cookies()
+         const role = (await cookieStore).get('oauth_role')?.value
          try {
             if (!user.email) return false
-            await prisma.user.upsert({
-               where: { email: user.email },
-               update: {},
-               create: {
-                  email: user.email,
-                  provider: 'Google',
-               },
-            })
+            if (role === 'Streamer') {
+               const res = await prisma.streamer.upsert({
+                  where: { email: user.email },
+                  update: {},
+                  create: {
+                     email: user.email,
+                     provider: 'Google',
+                  },
+               })
+            } else {
+               const res = await prisma.user.upsert({
+                  where: { email: user.email },
+                  update: {},
+                  create: {
+                     email: user.email,
+                     provider: 'Google',
+                  },
+               })
+            }
+            ;(await cookieStore).delete('oauth_role')
             return true
          } catch (error) {
             console.error(error)

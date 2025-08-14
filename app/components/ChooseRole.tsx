@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { User, Palette, X } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import { setCookie } from 'cookies-next'
 
 export default function UserTypeModal() {
    const [isModalOpen, setIsModalOpen] = useState(false)
@@ -9,7 +10,11 @@ export default function UserTypeModal() {
    const closeModal = () => setIsModalOpen(false)
 
    const handleUserTypeSelection = (userType: string) => {
-      signIn('google', { callbackUrl: '/dashboard', redirect: true })
+      setCookie('oauth_role', userType, { maxAge: 120 })
+      signIn('google', {
+         callbackUrl: '/dashboard',
+         redirect: true,
+      })
       closeModal()
    }
 
