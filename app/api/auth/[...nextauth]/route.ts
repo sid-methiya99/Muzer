@@ -70,6 +70,7 @@ const handler = NextAuth({
          const role: Role =
             ((await cookieStore).get('oauth_role')?.value as Role) ??
             ('EndUser' as Role)
+         console.log(role)
 
          // Role from query (first login) or fallback
          if (role === 'Streamer') return `${baseUrl}/dashboard/creator`
