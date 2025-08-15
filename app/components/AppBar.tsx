@@ -1,9 +1,10 @@
-'use client'
 import { Music } from 'lucide-react'
 import Link from 'next/link'
 import UserTypeModal from './ChooseRole'
+import { authClient } from '../lib/auth-client'
 
 export function AppBar() {
+   // const { data: session } = authClient.useSession()
    return (
       <header className="mx-5 px-4 lg:px-6 h-14 flex items-center mt-2">
          <nav className="flex justify-between w-full">
@@ -20,8 +21,7 @@ export function AppBar() {
                <div>
                   {/* {session.data?.user && ( */}
                   {/*    <button */}
-                  {/*       onClick={() => { */}
-                  {/*       }} */}
+                  {/*       onClick={() => {}} */}
                   {/*       className="text-base font-medium  text-white  bg-purple-600 px-3 py-2 rounded-md cursor-pointer" */}
                   {/*    > */}
                   {/*       Logout */}
