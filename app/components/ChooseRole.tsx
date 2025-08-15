@@ -1,9 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { User, Palette, X } from 'lucide-react'
-// import { signIn } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { setCookie } from 'cookies-next'
-import { signUp } from '../lib/auth-client'
 
 export default function UserTypeModal() {
    const [isModalOpen, setIsModalOpen] = useState(false)
@@ -11,13 +10,12 @@ export default function UserTypeModal() {
    const openModal = () => setIsModalOpen(true)
    const closeModal = () => setIsModalOpen(false)
 
-   const handleUserTypeSelection = async (userType: string) => {
-      await fetch('/api/set-role', {
-         method: 'POST',
-         body: JSON.stringify({ role: userType }),
-         headers: { 'Content-Type': 'application/json' },
+   const handleUserTypeSelection = (userType: string) => {
+      setCookie('oauth_role', userType, { maxAge: 120 })
+      signIn('google', {
+         callbackUrl: '/dashboard',
+         redirect: true,
       })
-      signUp()
       closeModal()
    }
 
