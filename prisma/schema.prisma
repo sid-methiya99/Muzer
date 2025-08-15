@@ -15,34 +15,38 @@ datasource db {
 }
 
 model User {
-    id       String   @id @default(uuid())
-    email    String   @unique
-    provider Provider
-    streams  Stream[]
-    UpVote   UpVote[]
-}
-
-model Streamer {
-    id       String   @id @default(uuid())
-    email    String   @unique
-    provider Provider
-    streams  Stream[]
+    id                String              @id @default(uuid())
+    email             String              @unique
+    provider          Provider
+    // For creators
+    streams           Stream[]
+    UpVote            UpVote[]
+    role              Role
+    // For Users 
+    CurrentSpaceUsers CurrentSpaceUsers[]
 }
 
 model Stream {
-    id          String     @id @default(uuid())
+    id          String              @id @default(uuid())
     type        StreamType
-    active      Boolean    @default(true)
+    active      Boolean             @default(true)
     url         String
-    title       String     @default("")
-    smallImg    String     @default("")
-    bigImg      String     @default("")
+    title       String              @default("")
+    smallImg    String              @default("")
+    bigImg      String              @default("")
     extractedId String
     upVotes     UpVote[]
-    userId      String
-    user        User       @relation(fields: [userId], references: [id])
-    Streamer    Streamer   @relation(fields: [streamerId], references: [id])
-    streamerId  String
+    creatorId   String
+    creator     User                @relation(fields: [creatorId], references: [id])
+    user        CurrentSpaceUsers[]
+}
+
+model CurrentSpaceUsers {
+    id       String  @id @default(uuid())
+    userId   String
+    user     User    @relation(fields: [userId], references: [id])
+    Stream   Stream? @relation(fields: [streamId], references: [id])
+    streamId String?
 }
 
 model UpVote {
@@ -58,6 +62,11 @@ model UpVote {
 enum StreamType {
     Spotify
     Youtube
+}
+
+enum Role {
+    Streamer
+    EndUser
 }
 
 enum Provider {

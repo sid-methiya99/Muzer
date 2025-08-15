@@ -2,7 +2,7 @@ import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import prisma from '@/app/lib/db'
 import { cookies } from 'next/headers'
-
+type Role = 'Streamer' | 'EndUser'
 const handler = NextAuth({
    providers: [
       GoogleProvider({
@@ -17,31 +17,22 @@ const handler = NextAuth({
    ],
    secret: process.env.NEXTAUTH_SECRET ?? 'secret',
    callbacks: {
-      async signIn({ user, account }) {
+      async signIn({ user }) {
          const cookieStore = cookies()
-         const role = (await cookieStore).get('oauth_role')?.value
+         const role: Role =
+            ((await cookieStore).get('oauth_role')?.value as Role) ??
+            ('EndUser' as Role)
          try {
             if (!user.email) return false
-            if (role === 'Streamer') {
-               const res = await prisma.streamer.upsert({
-                  where: { email: user.email },
-                  update: {},
-                  create: {
-                     email: user.email,
-                     provider: 'Google',
-                  },
-               })
-            } else {
-               const res = await prisma.user.upsert({
-                  where: { email: user.email },
-                  update: {},
-                  create: {
-                     email: user.email,
-                     provider: 'Google',
-                  },
-               })
-            }
-            ;(await cookieStore).delete('oauth_role')
+            const res = await prisma.user.upsert({
+               where: { email: user.email },
+               update: {},
+               create: {
+                  email: user.email,
+                  provider: 'Google',
+                  role: role,
+               },
+            })
             return true
          } catch (error) {
             console.error(error)
@@ -51,14 +42,16 @@ const handler = NextAuth({
       async jwt({ token, account, user }) {
          // Store Google access token and userId on first sign in
          if (account && user.email) {
-            const dbUser = await prisma.user.findUnique({
+            const dbStreamer = await prisma.user.findUnique({
                where: { email: user.email },
             })
-            if (dbUser) {
-               token.userId = dbUser.id // Store your database user ID
-               token.email = dbUser.email
+            if (dbStreamer) {
+               token.userId = dbStreamer.id
+               token.email = dbStreamer.email
             }
          }
+
+         // Now we can safely delete the cookie
          if (account) {
             token.accessToken = account.access_token
          }

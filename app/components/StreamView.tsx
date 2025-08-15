@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { Video } from '../lib/types'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { useStreams } from '../hooks/useStreams'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutation'
 import AddSong from './AddSong'
