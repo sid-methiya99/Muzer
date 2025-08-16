@@ -13,6 +13,7 @@ const handler = NextAuth({
                scope: 'openid email profile https://www.googleapis.com/auth/youtube.readonly',
             },
          },
+         checks: ['none'],
       }),
    ],
    secret: process.env.NEXTAUTH_SECRET ?? 'secret',
@@ -70,11 +71,11 @@ const handler = NextAuth({
          const role: Role =
             ((await cookieStore).get('oauth_role')?.value as Role) ??
             ('EndUser' as Role)
-         console.log(role)
 
          // Role from query (first login) or fallback
-         if (role === 'Streamer') return `${baseUrl}/dashboard/creator`
-         if (role === 'EndUser') return `${baseUrl}/dashboard/user`
+         if (role === 'Streamer') return `${baseUrl}/creator`
+         if (role === 'EndUser') return `${baseUrl}/user`
+         console.log(baseUrl)
          return baseUrl
       },
    },

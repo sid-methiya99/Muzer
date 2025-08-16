@@ -3,9 +3,6 @@ import prisma from '@/app/lib/db'
 import { CreateSpaceSchema } from '@/app/lib/zodTypes'
 import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
-interface getSpaces {
-   streamerId: string
-}
 
 export async function POST(req: NextRequest) {
    const session = await getServerSession()

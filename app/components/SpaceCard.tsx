@@ -26,7 +26,7 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Space } from '../dashboard/creator/page'
+import { Space } from '../(dashboard)/creator/page'
 
 interface SpaceCardProps {
    space: Space
@@ -124,19 +124,6 @@ export const SpaceCard = ({ space }: SpaceCardProps) => {
 
          <CardContent className="space-y-4">
             {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-               <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-               </div>
-               <div className="flex items-center gap-2">
-                  <Music className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                     <span className="font-medium">{space.songCount}</span>{' '}
-                     songs
-                  </span>
-               </div>
-            </div>
-
             {/* Controls */}
             <div className="flex items-center justify-between pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
                <div className="flex items-center gap-2">

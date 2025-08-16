@@ -3,8 +3,6 @@ import axios from 'axios'
 import { SpaceFormData } from '../components/CreateSpaceModal'
 
 export function useAddSpaceMutation() {
-   const queryClient = useQueryClient()
-
    return useMutation({
       mutationFn: async (data: SpaceFormData) => {
          try {
