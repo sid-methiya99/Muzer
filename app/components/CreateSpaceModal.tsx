@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from '@/components/ui/select'
-import {
    Dialog,
    DialogContent,
    DialogHeader,
@@ -28,24 +21,22 @@ import {
 } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
 
-interface Space {
-   id: string
-   name: string
-   description: string
-   genre: string
-   isLive: boolean
-   memberCount: number
-   songCount: number
-   createdAt: string
-   thumbnail?: string
-}
+// interface Space {
+//    id: string
+//    name: string
+//    description: string
+//    genre: string
+//    isLive: boolean
+//    memberCount: number
+//    songCount: number
+//    createdAt: string
+//    thumbnail?: string
+// }
 
-interface SpaceFormData {
-   name: string
+export interface SpaceFormData {
+   title: string
    description: string
-   genre: string
-   isLive: boolean
-   thumbnail?: string
+   isActive: boolean
 }
 
 interface CreateSpaceModalProps {
@@ -54,23 +45,6 @@ interface CreateSpaceModalProps {
    onSubmit: (data: SpaceFormData) => void
 }
 
-const GENRES = [
-   'Pop',
-   'Rock',
-   'Hip Hop',
-   'Electronic',
-   'Jazz',
-   'Classical',
-   'Country',
-   'R&B',
-   'Indie',
-   'Folk',
-   'Metal',
-   'Reggae',
-   'Blues',
-   'Lo-fi',
-   'Ambient',
-]
 export const CreateSpaceModal = ({
    isOpen,
    onClose,
@@ -78,16 +52,17 @@ export const CreateSpaceModal = ({
 }: CreateSpaceModalProps) => {
    const form = useForm<SpaceFormData>({
       defaultValues: {
-         name: '',
+         title: '',
          description: '',
-         genre: '',
-         isLive: false,
+         isActive: false,
       },
    })
 
    const handleSubmit = (data: SpaceFormData) => {
+      console.log('From form: ', data)
       onSubmit(data)
       form.reset()
+      onClose()
    }
 
    return (
@@ -110,7 +85,7 @@ export const CreateSpaceModal = ({
                   {/* Space Name */}
                   <FormField
                      control={form.control}
-                     name="name"
+                     name="title"
                      rules={{ required: 'Space name is required' }}
                      render={({ field }) => (
                         <FormItem>
@@ -157,49 +132,11 @@ export const CreateSpaceModal = ({
                   />
 
                   {/* Genre */}
-                  <FormField
-                     control={form.control}
-                     name="genre"
-                     rules={{ required: 'Please select a genre' }}
-                     render={({ field }) => (
-                        <FormItem>
-                           <FormLabel className="text-gray-700 dark:text-gray-300">
-                              Primary Genre
-                           </FormLabel>
-                           <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                           >
-                              <FormControl>
-                                 <SelectTrigger className="focus:ring-purple-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                                    <SelectValue placeholder="Select a genre" />
-                                 </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                                 {GENRES.map((genre) => (
-                                    <SelectItem
-                                       key={genre}
-                                       value={genre}
-                                       className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                                    >
-                                       {genre}
-                                    </SelectItem>
-                                 ))}
-                              </SelectContent>
-                           </Select>
-                           <FormDescription className="text-gray-500 dark:text-gray-400">
-                              This helps users find spaces that match their
-                              taste
-                           </FormDescription>
-                           <FormMessage />
-                        </FormItem>
-                     )}
-                  />
 
                   {/* Go Live Toggle */}
                   <FormField
                      control={form.control}
-                     name="isLive"
+                     name="isActive"
                      render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border border-purple-500/10 p-4 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 dark:border-purple-500/20">
                            <div className="space-y-0.5">

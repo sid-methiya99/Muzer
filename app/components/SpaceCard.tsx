@@ -26,25 +26,14 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-interface Space {
-   id: string
-   name: string
-   description: string
-   genre: string
-   isLive: boolean
-   memberCount: number
-   songCount: number
-   createdAt: string
-   thumbnail?: string
-}
+import { Space } from '../dashboard/creator/page'
 
 interface SpaceCardProps {
    space: Space
 }
 
 export const SpaceCard = ({ space }: SpaceCardProps) => {
-   const [isLive, setIsLive] = useState(space.isLive)
+   const [isLive, setIsLive] = useState(space.isActive)
    // const { toast } = useToast()
 
    const handleToggleLive = () => {
@@ -76,7 +65,7 @@ export const SpaceCard = ({ space }: SpaceCardProps) => {
                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                      <CardTitle className="text-lg font-semibold group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                        {space.name}
+                        {space.title}
                      </CardTitle>
                      <Badge
                         variant={isLive ? 'default' : 'secondary'}
@@ -127,12 +116,6 @@ export const SpaceCard = ({ space }: SpaceCardProps) => {
             </div>
 
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-               <Badge
-                  variant="outline"
-                  className="text-xs border-gray-200 dark:border-gray-700"
-               >
-                  {space.genre}
-               </Badge>
                <span>
                   Created {new Date(space.createdAt).toLocaleDateString()}
                </span>
@@ -144,10 +127,6 @@ export const SpaceCard = ({ space }: SpaceCardProps) => {
             <div className="grid grid-cols-2 gap-4">
                <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                     <span className="font-medium">{space.memberCount}</span>{' '}
-                     members
-                  </span>
                </div>
                <div className="flex items-center gap-2">
                   <Music className="w-4 h-4 text-gray-500 dark:text-gray-400" />
