@@ -31,6 +31,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
       if (songs) {
          setQueue(songs)
       }
+      console.log(songs)
    }, [songs])
 
    const playNext = () => {

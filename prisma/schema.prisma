@@ -22,7 +22,7 @@ model User {
     role         Role
     CreatorSpace Space[]
     SpaceUsers   SpaceUsers[]
-    UpVote       UpVote[]
+    upVote       UpVote[]
 }
 
 model Space {
@@ -49,7 +49,7 @@ model SongQueue {
     extractedId  String
     Space        Space      @relation(fields: [spaceId], references: [id])
     spaceId      String
-    UpVote       UpVote[]
+    upVote       UpVote[]
     songByUserId String
     SongByUsers  SpaceUsers @relation(fields: [songByUserId], references: [userId])
 }
@@ -67,13 +67,13 @@ model SpaceUsers {
 }
 
 model UpVote {
-    id       String    @id @default(uuid())
-    userId   String
-    user     User      @relation(fields: [userId], references: [id])
-    streamId String
-    stream   SongQueue @relation(fields: [streamId], references: [id])
+    id     String    @id @default(uuid())
+    userId String
+    user   User      @relation(fields: [userId], references: [id])
+    songId String
+    stream SongQueue @relation(fields: [songId], references: [id])
 
-    @@unique([userId, streamId])
+    @@unique([userId, songId])
 }
 
 enum StreamType {

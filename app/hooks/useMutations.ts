@@ -48,9 +48,12 @@ export function useVoteMutation(
 
    return useMutation<void, Error, VoteParams>({
       mutationFn: ({ id, isUpVote }: VoteParams) => {
-         return axios.post(`/api/streams/${isUpVote ? 'upvote' : 'downvote'}`, {
-            data: { streamId: id },
-         })
+         return axios.post(
+            `/api/spaces/stream/${isUpVote ? 'upvote' : 'downvote'}`,
+            {
+               data: { songId: id },
+            }
+         )
       },
       onMutate: ({ id, isUpVote }: VoteParams) => {
          setQueue((prevQueue) =>
@@ -61,12 +64,12 @@ export function useVoteMutation(
                           ...video,
                           haveVoted: isUpVote,
                           upVote: isUpVote
-                             ? video._count.UpVote + 1
-                             : video._count.UpVote - 1,
+                             ? video.upVote + 1
+                             : video.upVote - 1,
                        }
                      : video
                )
-               .sort((a, b) => b._count.UpVote - a._count.UpVote)
+               .sort((a, b) => b.upVote - a.upVote)
          )
       },
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ['streams'] }),

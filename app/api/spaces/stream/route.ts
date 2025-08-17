@@ -83,14 +83,23 @@ export async function GET(req: NextRequest) {
          include: {
             _count: {
                select: {
-                  UpVote: true,
+                  upVote: true,
+               },
+            },
+            upVote: {
+               where: {
+                  userId: session.user.id,
                },
             },
          },
       })
       return NextResponse.json(
          {
-            findSongs,
+            findSongs: findSongs.map(({ _count, ...rest }) => ({
+               ...rest,
+               upVote: _count.upVote,
+               haveVoted: rest.upVote.length ? true : false,
+            })),
          },
          {
             status: 200,

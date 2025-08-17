@@ -10,9 +10,8 @@ export interface Video {
    extractedId: string
    spaceId: string
    songByUserId: string
-   _count: {
-      UpVote: number
-   }
+   upVote: number
+   haveVoted: boolean
 }
 
 export interface VoteParams {
