@@ -53,7 +53,9 @@ export default function QueueItem({ video, onVote }: QueueItemProps) {
                         ) : (
                            <ThumbsDown className="h-4 w-4" />
                         )}
-                        <span className="font-medium">{video.upVote}</span>
+                        <span className="font-medium">
+                           {video._count.UpVote}
+                        </span>
                      </Button>
                   </div>
                </div>

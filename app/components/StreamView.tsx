@@ -7,28 +7,31 @@ import Header from '@/app/components/StreamHeader'
 import AddSong from '@/app/components/AddSong'
 import QueueList from '@/app/components/QueueList'
 import NowPlaying from '@/app/components/NowPlaying'
-import { useAddSongMutation } from '../hooks/useMutations'
+import { useAddSongMutation, useVoteMutation } from '../hooks/useMutations'
+import { useStreams } from '../hooks/useStreams'
 
 export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
 
+   const { data: songs, isLoading, error } = useStreams(spaceId ?? '')
    const session = useSession()
    const router = useRouter()
 
    const addSongMutation = useAddSongMutation(setInputLink)
+   const voteMutation = useVoteMutation(setQueue)
    useEffect(() => {
       if (session.status === 'unauthenticated') {
          router.push('/')
       }
    }, [session.status, router])
 
-   // useEffect(() => {
-   //    if (streams) {
-   //       setQueue(streams)
-   //    }
-   // }, [streams])
+   useEffect(() => {
+      if (songs) {
+         setQueue(songs)
+      }
+   }, [songs])
 
    const playNext = () => {
       if (queue.length > 0) {
@@ -53,8 +56,8 @@ export function StreamView({ spaceId }: { spaceId: string }) {
             <div className="grid lg:grid-cols-3 gap-8">
                <QueueList
                   queue={queue}
-                  // isLoading={isLoading}
-                  // onVote={voteMutation}
+                  isLoading={isLoading}
+                  onVote={voteMutation}
                />
 
                <NowPlaying

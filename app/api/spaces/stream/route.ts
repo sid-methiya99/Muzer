@@ -15,8 +15,6 @@ export async function POST(req: NextRequest) {
    }
 
    const data = await req.json()
-   console.log('Data: ', data)
-
    const receivedData = data.data.url
    const receivedSpaceId = data.data.spaceId
    const verifyReceivedData = CreateStreamSchema.safeParse({
@@ -35,9 +33,6 @@ export async function POST(req: NextRequest) {
    }
 
    const youtubeData = await getYouTubeData(extractedId)
-   console.log(youtubeData)
-   console.log('Extracted Id: ', extractedId)
-   console.log('UserId: ', session.user.id)
    try {
       const res = await prisma.songQueue.create({
          data: {
@@ -62,5 +57,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
          message: 'Error while adding streams',
       })
+   }
+}
+
+export async function GET(req: NextRequest) {
+   const session = await getServerSession(authOptions)
+
+   if (!session?.user.email) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+         status: 401,
+      })
+   }
+
+   const spaceId = req.nextUrl.searchParams.get('spaceId')
+   if (!spaceId) {
+      return NextResponse.json({
+         message: 'Error',
+      })
+   }
+   try {
+      const findSongs = await prisma.songQueue.findMany({
+         where: {
+            spaceId: spaceId,
+         },
+         include: {
+            _count: {
+               select: {
+                  UpVote: true,
+               },
+            },
+         },
+      })
+      return NextResponse.json(
+         {
+            findSongs,
+         },
+         {
+            status: 200,
+         }
+      )
+   } catch (error) {
+      console.error(error)
+      return NextResponse.json(
+         {
+            message: 'Error while sending songs',
+         },
+         {
+            status: 411,
+         }
+      )
    }
 }

@@ -9,12 +9,13 @@ export interface Video {
    bigImg: string
    extractedId: string
    spaceId: string
-   spaceUsers: SpaceUsers[]
+   songByUserId: string
+   _count: {
+      UpVote: number
+   }
 }
 
-interface SpaceUsers {
+export interface VoteParams {
    id: string
-   userId: string
-   haveVoted: boolean
-   streamerId: string
+   isUpVote: boolean
 }

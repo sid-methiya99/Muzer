@@ -4,6 +4,7 @@ import {
    UseMutationResult,
 } from '@tanstack/react-query'
 import axios, { AxiosResponse, AxiosError } from 'axios'
+import { Video, VoteParams } from '../lib/types'
 
 // Define your types
 export interface AddSongData {
@@ -15,7 +16,6 @@ export function useAddSongMutation(
    setInputLink: (value: string) => void
 ): UseMutationResult<AxiosResponse<any>, AxiosError, AddSongData, unknown> {
    const queryClient = useQueryClient()
-
    return useMutation({
       mutationFn: async ({
          url,
@@ -30,7 +30,7 @@ export function useAddSongMutation(
       onSuccess: (data) => {
          console.log('Added stream successfully', data.data)
          setInputLink('')
-         // Invalidate relevant queries
+         queryClient.invalidateQueries({ queryKey: ['songs'] })
       },
       onError: (error: AxiosError) => {
          console.error(
@@ -41,6 +41,34 @@ export function useAddSongMutation(
    })
 }
 
-// Usage example:
-// const mutation = useAddSongMutation(setInputLink)
-// mutation.mutate({ url: 'song-url', spaceId: 'space-123' })
+export function useVoteMutation(
+   setQueue: React.Dispatch<React.SetStateAction<any[]>>
+) {
+   const queryClient = useQueryClient()
+
+   return useMutation<void, Error, VoteParams>({
+      mutationFn: ({ id, isUpVote }: VoteParams) => {
+         return axios.post(`/api/streams/${isUpVote ? 'upvote' : 'downvote'}`, {
+            data: { streamId: id },
+         })
+      },
+      onMutate: ({ id, isUpVote }: VoteParams) => {
+         setQueue((prevQueue) =>
+            [...prevQueue]
+               .map((video: Video) =>
+                  video.id === id
+                     ? {
+                          ...video,
+                          haveVoted: isUpVote,
+                          upVote: isUpVote
+                             ? video._count.UpVote + 1
+                             : video._count.UpVote - 1,
+                       }
+                     : video
+               )
+               .sort((a, b) => b._count.UpVote - a._count.UpVote)
+         )
+      },
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['streams'] }),
+   })
+}
