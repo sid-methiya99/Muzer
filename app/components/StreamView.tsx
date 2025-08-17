@@ -1,14 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Video } from '@/app/lib/types'
-// import { useStreams } from '../hooks/useStreams'
-// import { useAddSongMutation, useVoteMutation } from '../hooks/useMutation'
 import Header from '@/app/components/StreamHeader'
 import AddSong from '@/app/components/AddSong'
 import QueueList from '@/app/components/QueueList'
 import NowPlaying from '@/app/components/NowPlaying'
+import { useAddSongMutation } from '../hooks/useMutations'
+
 export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
@@ -17,10 +17,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
    const session = useSession()
    const router = useRouter()
 
-   // const { data: streams, isLoading, error } = useStreams(creatorId ?? '')
-   // const addSongMutation = useAddSongMutation(setInputLink)
-   // const voteMutation = useVoteMutation(setQueue)
-   //
+   const addSongMutation = useAddSongMutation(setInputLink)
    useEffect(() => {
       if (session.status === 'unauthenticated') {
          router.push('/')
@@ -46,10 +43,11 @@ export function StreamView({ spaceId }: { spaceId: string }) {
 
          <div className="relative z-10 max-w-6xl mx-auto p-6 space-y-8">
             <AddSong
-               inputLink={inputLink}
+               url={inputLink}
                setInputLink={setInputLink}
-               // mutation={addSongMutation}
+               mutation={addSongMutation}
                isLoggedIn={true}
+               spaceId={spaceId}
             />
 
             <div className="grid lg:grid-cols-3 gap-8">
