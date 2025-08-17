@@ -7,8 +7,8 @@ import { Video } from '../lib/types'
 
 interface QueueListProps {
    queue: Video[]
-   isLoading: boolean
-   onVote: UseMutationResult<
+   isLoading?: boolean
+   onVote?: UseMutationResult<
       void,
       Error,
       { id: string; isUpVote: boolean },

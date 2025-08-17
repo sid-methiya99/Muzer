@@ -15,6 +15,7 @@ import { useSpaces } from '@/app/hooks/useGetSpaces'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAddSpaceUserToSpaceMut } from '@/app/hooks/useAddUserToSpace'
 
 export interface Space {
    id: string
@@ -30,10 +31,10 @@ export default function StreamerDashboard() {
    const queryClient = useQueryClient()
    const { data: spaces, isLoading, error } = useSpaces()
    const { mutate } = useAddSpaceMutation()
+   const { mutate: mutates } = useAddSpaceUserToSpaceMut()
    const router = useRouter()
 
    const handleCreateSpace = (data: SpaceFormData) => {
-      console.log('From user dahsboard: ', data)
       mutate(data, {
          onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['spaces'] })
@@ -45,9 +46,17 @@ export default function StreamerDashboard() {
       signOut()
       router.push('/')
    }
-   useEffect(() => {
-      console.log('Space from backend: ', spaces)
-   }, [spaces])
+
+   const navUserToSpace = (id: string) => {
+      const spaceId = id
+      mutates(spaceId, {
+         onSuccess: () => {
+            console.log('Navigated')
+         },
+      })
+      router.push(`/creator/space/${spaceId}`)
+   }
+   useEffect(() => {}, [spaces])
 
    if (isLoading) return <div>Loading...</div>
    if (error) return <div>Something went wrong</div>
@@ -207,7 +216,13 @@ export default function StreamerDashboard() {
                ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {spaces.map((space: Space) => (
-                        <SpaceCard key={space.id} space={space} />
+                        <SpaceCard
+                           key={space.id}
+                           space={space}
+                           onClick={() => {
+                              navUserToSpace(space.id)
+                           }}
+                        />
                      ))}
                   </div>
                )}

@@ -1,9 +1,9 @@
-import NextAuth from 'next-auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import prisma from '@/app/lib/db'
 import { cookies } from 'next/headers'
 type Role = 'Streamer' | 'EndUser'
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
    providers: [
       GoogleProvider({
          clientId: process.env.GOOGLE_CLIENT_ID ?? '',
@@ -25,10 +25,16 @@ const handler = NextAuth({
             ('EndUser' as Role)
          try {
             if (!user.email) return false
-            const res = await prisma.user.upsert({
-               where: { email: user.email },
-               update: {},
-               create: {
+            const checkUser = await prisma.user.findUnique({
+               where: {
+                  email: user.email,
+               },
+            })
+            if (checkUser) {
+               return true
+            }
+            const res = await prisma.user.create({
+               data: {
                   email: user.email,
                   name: user.name ?? '',
                   role: role,
@@ -43,13 +49,21 @@ const handler = NextAuth({
       async jwt({ token, account, user }) {
          // Store Google access token and userId on first sign in
          if (account && user.email) {
-            const dbStreamer = await prisma.user.findUnique({
+            const dbUser = await prisma.user.findUnique({
                where: { email: user.email },
             })
-            if (dbStreamer) {
-               token.userId = dbStreamer.id
-               token.email = dbStreamer.email
-               token.role = dbStreamer.role
+            if (dbUser) {
+               token.userId = dbUser.id
+               token.email = dbUser.email
+               token.role = dbUser.role
+            }
+         } else if (!token.userId && token.email) {
+            const dbUser = await prisma.user.findUnique({
+               where: { email: token.email },
+            })
+            if (dbUser) {
+               token.userId = dbUser.id
+               token.role = dbUser.role
             }
          }
 
@@ -63,7 +77,7 @@ const handler = NextAuth({
          // Pass both access token AND userId to the client
          session.accessToken = token.accessToken
          session.user.id = token.userId as string // Add this line!
-         session.user.role = token.role as string
+         session.user.role = (token.role as string as Role) ?? 'EndUser'
          return session
       },
       async redirect({ url, baseUrl }) {
@@ -75,10 +89,9 @@ const handler = NextAuth({
          // Role from query (first login) or fallback
          if (role === 'Streamer') return `${baseUrl}/creator`
          if (role === 'EndUser') return `${baseUrl}/user`
-         console.log(baseUrl)
          return baseUrl
       },
    },
-})
-
+}
+export const handler = NextAuth(authOptions)
 export { handler as GET, handler as POST }

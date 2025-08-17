@@ -9,6 +9,13 @@ export async function middleware(req) {
       return NextResponse.redirect(new URL('/', req.url))
    }
 
+   if (url.pathname === '/') {
+      if (token.role === 'Streamer') {
+         return NextResponse.redirect(new URL('/creator', req.url))
+      } else if (token.role === 'EndUser') {
+         return NextResponse.redirect(new URL('/user', req.url))
+      }
+   }
    // If EndUser tries to go to /creator → redirect to /user
    if (url.pathname.startsWith('/creator') && token.role !== 'Streamer') {
       return NextResponse.redirect(new URL('/user', req.url))

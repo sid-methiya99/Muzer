@@ -1,8 +1,7 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Video } from '@/app/lib/types'
 // import { useStreams } from '../hooks/useStreams'
 // import { useAddSongMutation, useVoteMutation } from '../hooks/useMutation'
@@ -10,14 +9,12 @@ import Header from '@/app/components/StreamHeader'
 import AddSong from '@/app/components/AddSong'
 import QueueList from '@/app/components/QueueList'
 import NowPlaying from '@/app/components/NowPlaying'
-
-export default function Dashboard() {
+export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
    const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
 
    const session = useSession()
-   const creatorId = session.data?.user?.id
    const router = useRouter()
 
    // const { data: streams, isLoading, error } = useStreams(creatorId ?? '')
@@ -30,11 +27,11 @@ export default function Dashboard() {
       }
    }, [session.status, router])
 
-   useEffect(() => {
-      if (streams) {
-         setQueue(streams)
-      }
-   }, [streams])
+   // useEffect(() => {
+   //    if (streams) {
+   //       setQueue(streams)
+   //    }
+   // }, [streams])
 
    const playNext = () => {
       if (queue.length > 0) {
@@ -51,15 +48,15 @@ export default function Dashboard() {
             <AddSong
                inputLink={inputLink}
                setInputLink={setInputLink}
-               mutation={addSongMutation}
+               // mutation={addSongMutation}
                isLoggedIn={true}
             />
 
             <div className="grid lg:grid-cols-3 gap-8">
                <QueueList
                   queue={queue}
-                  isLoading={isLoading}
-                  onVote={voteMutation}
+                  // isLoading={isLoading}
+                  // onVote={voteMutation}
                />
 
                <NowPlaying

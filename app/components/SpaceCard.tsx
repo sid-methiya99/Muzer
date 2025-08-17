@@ -30,9 +30,10 @@ import { Space } from '../(dashboard)/creator/page'
 
 interface SpaceCardProps {
    space: Space
+   onClick: () => void
 }
 
-export const SpaceCard = ({ space }: SpaceCardProps) => {
+export const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
    const [isLive, setIsLive] = useState(space.isActive)
    // const { toast } = useToast()
 
@@ -59,7 +60,10 @@ export const SpaceCard = ({ space }: SpaceCardProps) => {
    }
 
    return (
-      <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500/20 hover:border-l-purple-500 bg-gradient-to-br from-white to-white/80 dark:from-gray-900 dark:to-gray-900/80">
+      <Card
+         onClick={onClick}
+         className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500/20 hover:border-l-purple-500 bg-gradient-to-br from-white to-white/80 dark:from-gray-900 dark:to-gray-900/80"
+      >
          <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
                <div className="flex-1">

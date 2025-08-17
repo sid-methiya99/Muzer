@@ -59,7 +59,6 @@ export const CreateSpaceModal = ({
    })
 
    const handleSubmit = (data: SpaceFormData) => {
-      console.log('From form: ', data)
       onSubmit(data)
       form.reset()
       onClose()

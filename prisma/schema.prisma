@@ -15,32 +15,31 @@ datasource db {
 }
 
 model User {
-    id            String       @id @default(uuid())
-    name          String
-    email         String       @unique
-    image         String?
-    role          Role
-    CreatorSpace  Space[]
-    CreatorStream Stream[]
-    SpaceUsers    SpaceUsers[]
+    id           String       @id @default(uuid())
+    name         String
+    email        String       @unique
+    image        String?
+    role         Role
+    CreatorSpace Space[]
+    SpaceUsers   SpaceUsers[]
+    UpVote       UpVote[]
 }
 
 model Space {
-    id          String   @id @default(uuid())
-    streamerId  String
-    Streamer    User     @relation(fields: [streamerId], references: [id])
-    createdAt   DateTime @default(now())
-    isActive    Boolean  @default(false)
-    title       String?
-    description String?
-    current     Stream[]
-}
-
-// This is the smtream which is part of a space and where different users can come and paste the songs
-model Stream {
     id          String       @id @default(uuid())
     streamerId  String
     Streamer    User         @relation(fields: [streamerId], references: [id])
+    createdAt   DateTime     @default(now())
+    isActive    Boolean      @default(false)
+    title       String?
+    description String?
+    current     SongQueue[]
+    SpaceUsers  SpaceUsers[]
+}
+
+// This is the smtream which is part of a space and where different users can come and paste the songs
+model SongQueue {
+    id          String       @id @default(uuid())
     type        StreamType
     active      Boolean      @default(true)
     url         String
@@ -48,21 +47,31 @@ model Stream {
     smallImg    String       @default("")
     bigImg      String       @default("")
     extractedId String
-    Space       Space?       @relation(fields: [spaceId], references: [id])
-    spaceId     String?
-    SpaceUsers  SpaceUsers[]
+    Space       Space        @relation(fields: [spaceId], references: [id])
+    spaceId     String
+    UpVote      UpVote[]
+    SongByUsers SpaceUsers[]
 }
 
 // This stores data for Users inside a particular stream
 model SpaceUsers {
-    id         String  @id @default(uuid())
-    userId     String
-    user       User    @relation(fields: [userId], references: [id])
-    haveVoted  Boolean @default(false)
-    streamerId String
-    streamer   Stream  @relation(fields: [streamerId], references: [id])
+    id          String     @id @default(uuid())
+    userId      String
+    user        User       @relation(fields: [userId], references: [id])
+    Space       Space      @relation(fields: [spaceId], references: [id])
+    spaceId     String
+    SongQueue   SongQueue? @relation(fields: [songQueueId], references: [id])
+    songQueueId String?
+}
 
-    @@unique([streamerId, userId])
+model UpVote {
+    id       String    @id @default(uuid())
+    userId   String
+    user     User      @relation(fields: [userId], references: [id])
+    streamId String
+    stream   SongQueue @relation(fields: [streamId], references: [id])
+
+    @@unique([userId, streamId])
 }
 
 enum StreamType {

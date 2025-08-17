@@ -18,9 +18,7 @@ export function useSpaces() {
             },
          })
 
-         console.log('Full API response:', res.data) // Log the full response
          const spaces = res.data.spaces
-         console.log('Extracted spaces:', spaces)
          return spaces || [] // Return empty array if spaces is undefined
       },
       // Optional: Add some configuration
