@@ -1,14 +1,15 @@
 'use client'
 
-import { Music, Share2 } from 'lucide-react'
+import { ArrowLeft, Music, Share2 } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { ToastContainer, toast } from 'react-toastify'
 
-export default function Header() {
+export default function Header({ spaceId }: { spaceId: string }) {
    const session = useSession()
-   const userId = session?.data?.user?.id
+   const router = useRouter()
    const handleShare = async () => {
-      const shareableLink = `${window.location.host}/creator/${userId}`
+      const shareableLink = `${window.location.host}/creator/space/${spaceId}`
       navigator.clipboard.writeText(shareableLink).then(
          () => {
             toast.success('Link copied to clipboard', {
@@ -35,7 +36,9 @@ export default function Header() {
          }
       )
    }
-
+   const handleGoBack = () => {
+      router.push('/creator')
+   }
    return (
       <header className="mx-5 px-4 lg:px-6 h-14 flex items-center relative z-20">
          <nav className="flex justify-between w-full mt-4">
@@ -46,6 +49,13 @@ export default function Header() {
                </span>
             </div>
             <div className="flex items-center gap-2">
+               <button
+                  onClick={handleGoBack}
+                  className="text-md font-medium text-white bg-purple-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2"
+               >
+                  <ArrowLeft />
+                  Go Back
+               </button>
                <button
                   onClick={handleShare}
                   className="text-md font-medium text-white bg-purple-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2"

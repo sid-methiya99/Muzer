@@ -72,6 +72,6 @@ export function useVoteMutation(
                .sort((a, b) => b.upVote - a.upVote)
          )
       },
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['streams'] }),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ['songs'] }),
    })
 }

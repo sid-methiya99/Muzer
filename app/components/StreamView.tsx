@@ -9,6 +9,7 @@ import QueueList from '@/app/components/QueueList'
 import NowPlaying from '@/app/components/NowPlaying'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutations'
 import { useStreams } from '../hooks/useStreams'
+import { YouTubeEvent, YouTubeProps } from 'react-youtube'
 
 export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
@@ -31,7 +32,6 @@ export function StreamView({ spaceId }: { spaceId: string }) {
       if (songs) {
          setQueue(songs)
       }
-      console.log(songs)
    }, [songs])
 
    const playNext = () => {
@@ -41,9 +41,18 @@ export function StreamView({ spaceId }: { spaceId: string }) {
       }
    }
 
+   const onStateChange: YouTubeProps['onStateChange'] = (
+      event: YouTubeEvent
+   ) => {
+      if (event.data === window.YT.PlayerState.ENDED) {
+         setCurrentVideo(queue[0])
+         setQueue(queue.slice(1))
+      }
+   }
+
    return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-         <Header />
+         <Header spaceId={spaceId} />
 
          <div className="relative z-10 max-w-6xl mx-auto p-6 space-y-8">
             <AddSong
@@ -54,7 +63,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                spaceId={spaceId}
             />
 
-            <div className="grid lg:grid-cols-3 gap-8">
+            <div className="grid lg:grid-cols-3">
                <QueueList
                   queue={queue}
                   isLoading={isLoading}
@@ -65,6 +74,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                   currentVideo={currentVideo}
                   queue={queue}
                   onPlayNext={playNext}
+                  onStateChange={onStateChange}
                />
             </div>
 

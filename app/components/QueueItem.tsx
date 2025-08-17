@@ -18,21 +18,21 @@ interface QueueItemProps {
 
 export default function QueueItem({ video, onVote }: QueueItemProps) {
    return (
-      <Card className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 py-2">
-         <CardContent className="p-2">
-            <div className="flex items-center space-x-2">
-               <div className="relative">
+      <Card className="bg-white/5 backdrop-blur-lg border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 py-1 max-w-2xl max-h-3xl">
+         <div>
+            <div className="flex items-center space-x-2 ">
+               <div className="relative ">
                   <img
                      src={video.smallImg}
                      alt={video.title}
-                     className="h-20 w-40 object-cover"
+                     className="h-25 w-50 object-cover rounded mx-2 my-2"
                   />
                </div>
-               <div className="flex-grow min-w-0">
-                  <h3 className="font-semibold text-white text-md truncate mb-2">
+               <div className="flex-grow min-w-0 ">
+                  <h3 className="font-semibold text-white text-md mb-2 overflow-clip whitespace-nowrap ml-2">
                      {video.title}
                   </h3>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-4 ml-2">
                      <Button
                         variant="outline"
                         size="sm"
@@ -58,7 +58,7 @@ export default function QueueItem({ video, onVote }: QueueItemProps) {
                   </div>
                </div>
             </div>
-         </CardContent>
+         </div>
       </Card>
    )
 }

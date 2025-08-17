@@ -22,13 +22,15 @@ export default function QueueList({
    onVote,
 }: QueueListProps) {
    return (
-      <div className="lg:col-span-2 space-y-6">
-         <div className="flex items-center space-x-3">
-            <h2 className="text-3xl font-bold text-white">Upcoming Songs</h2>
+      <div className="lg:col-span-2 space-y-6 max-w-2xl ">
+         <div className="space-x-3 justify-center">
+            <h2 className="text-3xl font-bold text-white max-w-xl">
+               Upcoming Songs
+            </h2>
          </div>
 
          {!isLoading ? (
-            <div className="space-y-2">
+            <div className="space-y-2 flex-col ">
                {queue.map((video) => (
                   <QueueItem key={video.id} video={video} onVote={onVote} />
                ))}

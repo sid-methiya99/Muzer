@@ -5,51 +5,47 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Music, Play, Heart } from 'lucide-react'
 import { Video } from '../lib/types'
 
+import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube'
 interface NowPlayingProps {
    currentVideo: Video | null
    queue: Video[]
    onPlayNext: () => void
+   onStateChange: (event: YouTubeEvent) => void
 }
 
 export default function NowPlaying({
    currentVideo,
    queue,
    onPlayNext,
+   onStateChange,
 }: NowPlayingProps) {
    return (
-      <div className="space-y-6">
-         <h2 className="text-3xl font-bold text-white flex items-center space-x-3">
-            <span>Now Playing</span>
-            {currentVideo && (
-               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            )}
-         </h2>
+      <div className="space-y-3 min-w-sm">
+         <div className="w-full flex justify-center">
+            <span className="text-3xl font-bold text-white space-x-3">
+               Now Playing
+            </span>
+         </div>
 
-         <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-lg border border-purple-400/30 shadow-2xl">
-            <CardContent className="p-6">
+         <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-lg border border-purple-400/30 shadow-2xl flex items-center justify-center">
+            <CardContent>
                {currentVideo ? (
-                  <div className="space-y-6">
+                  <div>
                      <div className="relative">
-                        <div className="w-full h-48 bg-gradient-to-br from-purple-600 via-pink-600 to-cyan-600 rounded-xl flex items-center justify-center relative overflow-hidden shadow-2xl">
-                           <Music className="h-16 w-16 text-white/80 z-10" />
-                           <div className="absolute inset-0 bg-black/20"></div>
-                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                        </div>
-                        <div className="absolute top-3 right-3 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full flex items-center space-x-1 shadow-lg">
-                           <div className="w-2 h-2 bg-white rounded-full"></div>
-                           <span>LIVE</span>
-                        </div>
-                     </div>
-                     <div className="text-center space-y-3">
-                        <h3 className="font-bold text-white text-lg">
-                           {currentVideo.title}
-                        </h3>
-                        <div className="flex justify-center space-x-6 text-sm">
-                           <div className="flex items-center space-x-1 text-emerald-400">
-                              <Heart className="h-4 w-4 fill-current" />
-                              <span>{currentVideo.upVotes}</span>
-                           </div>
-                        </div>
+                        <YouTube
+                           videoId={currentVideo.extractedId}
+                           opts={{
+                              playerVars: {
+                                 autoplay: 1,
+                                 controls: 0, // ⬅ hides controls
+                                 modestbranding: 1, // optional: removes big YouTube logo
+                                 rel: 0,
+                              },
+                              height: '300',
+                              width: '450',
+                           }}
+                           onStateChange={onStateChange}
+                        />
                      </div>
                   </div>
                ) : (
