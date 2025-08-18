@@ -14,12 +14,14 @@ interface QueueListProps {
       { id: string; isUpVote: boolean },
       unknown
    >
+   isLoggedIn: boolean
 }
 
 export default function QueueList({
    queue,
    isLoading,
    onVote,
+   isLoggedIn,
 }: QueueListProps) {
    return (
       <div className="lg:col-span-2 space-y-6 max-w-2xl ">
@@ -32,7 +34,12 @@ export default function QueueList({
          {!isLoading ? (
             <div className="space-y-2 flex-col ">
                {queue.map((video) => (
-                  <QueueItem key={video.id} video={video} onVote={onVote} />
+                  <QueueItem
+                     key={video.id}
+                     video={video}
+                     onVote={onVote}
+                     isLoggedIn={isLoggedIn}
+                  />
                ))}
                {queue.length === 0 && (
                   <div className="text-center py-12 text-gray-400">

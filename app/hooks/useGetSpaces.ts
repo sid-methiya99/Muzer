@@ -18,10 +18,14 @@ export function useSpaces() {
             },
          })
 
-         const spaces = res.data.spaces
-         return spaces || [] // Return empty array if spaces is undefined
+         const spaces = res.data.spaces ?? []
+         const activeSpaces = res.data.totalLiveSpaces ?? 0
+         return { spaces, activeSpaces }
       },
-      // Optional: Add some configuration
+      select: (data) => ({
+         spaces: data.spaces,
+         totalLiveSpaces: data.activeSpaces,
+      }),
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 3,
    })

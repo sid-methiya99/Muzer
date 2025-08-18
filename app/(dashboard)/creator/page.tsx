@@ -16,6 +16,7 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAddSpaceUserToSpaceMut } from '@/app/hooks/useAddUserToSpace'
+import { da } from 'zod/v4/locales'
 
 export interface Space {
    id: string
@@ -29,7 +30,7 @@ export interface Space {
 export default function StreamerDashboard() {
    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
    const queryClient = useQueryClient()
-   const { data: spaces, isLoading, error } = useSpaces()
+   const { data, isLoading, error } = useSpaces()
    const { mutate } = useAddSpaceMutation()
    const { mutate: mutates } = useAddSpaceUserToSpaceMut()
    const router = useRouter()
@@ -50,13 +51,11 @@ export default function StreamerDashboard() {
    const navUserToSpace = (id: string) => {
       const spaceId = id
       mutates(spaceId, {
-         onSuccess: () => {
-            console.log('Navigated')
-         },
+         onSuccess: () => {},
       })
       router.push(`/creator/space/${spaceId}`)
    }
-   useEffect(() => {}, [spaces])
+   useEffect(() => {}, [data?.spaces])
 
    if (isLoading) return <div>Loading...</div>
    if (error) return <div>Something went wrong</div>
@@ -158,7 +157,7 @@ export default function StreamerDashboard() {
                   </CardHeader>
                   <CardContent>
                      <div className="text-3xl text-center font-bold text-purple-600 dark:text-purple-400">
-                        {spaces.length}
+                        {data?.spaces.length}
                      </div>
                   </CardContent>
                </Card>
@@ -171,7 +170,7 @@ export default function StreamerDashboard() {
                   </CardHeader>
                   <CardContent>
                      <div className="text-3xl font-bold text-pink-500 dark:text-pink-400 text-center">
-                        0
+                        {data?.totalLiveSpaces}
                      </div>
                   </CardContent>
                </Card>
@@ -188,12 +187,12 @@ export default function StreamerDashboard() {
                         variant="outline"
                         className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
                      >
-                        {spaces.length} Total
+                        {data?.spaces.length} Total
                      </Badge>
                   </div>
                </div>
 
-               {spaces.length === 0 ? (
+               {data?.spaces.length === 0 ? (
                   <Card className="border-dashed border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900">
                      <CardContent className="flex flex-col items-center justify-center py-16">
                         <Music className="w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" />
@@ -215,7 +214,7 @@ export default function StreamerDashboard() {
                   </Card>
                ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                     {spaces.map((space: Space) => (
+                     {data?.spaces.map((space: Space) => (
                         <SpaceCard
                            key={space.id}
                            space={space}

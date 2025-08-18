@@ -63,8 +63,15 @@ export async function GET(req: NextRequest) {
             streamerId: user?.id ?? '',
          },
       })
+      let totalLiveSpaces = 0
+      const activeSpaces = spaces.map((space) => {
+         if (space.isActive) {
+            totalLiveSpaces++
+         }
+      })
       return NextResponse.json({
          spaces,
+         totalLiveSpaces,
       })
    } catch (error) {
       console.error(error)

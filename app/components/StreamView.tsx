@@ -19,15 +19,14 @@ export function StreamView({ spaceId }: { spaceId: string }) {
    const { data: songs, isLoading, error } = useStreams(spaceId ?? '')
    const session = useSession()
    const router = useRouter()
-
    const addSongMutation = useAddSongMutation(setInputLink)
    const voteMutation = useVoteMutation(setQueue)
-   useEffect(() => {
-      if (session.status === 'unauthenticated') {
-         router.push('/')
-      }
-   }, [session.status, router])
-
+   // useEffect(() => {
+   //    if (session.status === 'unauthenticated') {
+   //       router.push('/')
+   //    }
+   // }, [session.status, router])
+   //
    useEffect(() => {
       if (songs) {
          setQueue(songs)
@@ -59,7 +58,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                url={inputLink}
                setInputLink={setInputLink}
                mutation={addSongMutation}
-               isLoggedIn={true}
+               isLoggedIn={session.data?.user.id ? true : false}
                spaceId={spaceId}
             />
 
@@ -68,6 +67,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                   queue={queue}
                   isLoading={isLoading}
                   onVote={voteMutation}
+                  isLoggedIn={session.data?.user.id ? true : false}
                />
 
                <NowPlaying

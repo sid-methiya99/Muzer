@@ -8,15 +8,31 @@ import { authOptions } from '../../auth/[...nextauth]/route'
 export async function POST(req: NextRequest) {
    const session = await getServerSession(authOptions)
 
+   const data = await req.json()
+   const receivedData = data.data.url
+   const receivedSpaceId = data.data.spaceId
+
    if (!session?.user.email) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
          status: 401,
       })
    }
 
-   const data = await req.json()
-   const receivedData = data.data.url
-   const receivedSpaceId = data.data.spaceId
+   const checkSpaceUser = await prisma.spaceUsers.findUnique({
+      where: {
+         userId: session.user.id,
+      },
+   })
+
+   if (!checkSpaceUser) {
+      const addSpaceUser = await prisma.spaceUsers.create({
+         data: {
+            userId: session.user.id,
+            spaceId: receivedSpaceId,
+         },
+      })
+   }
+
    const verifyReceivedData = CreateStreamSchema.safeParse({
       url: receivedData,
       spaceId: receivedSpaceId,
@@ -31,7 +47,6 @@ export async function POST(req: NextRequest) {
    if (extractedId.includes('&')) {
       extractedId = extractedId.split('&')[0]
    }
-
    const youtubeData = await getYouTubeData(extractedId)
    try {
       const res = await prisma.songQueue.create({
@@ -63,11 +78,11 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
    const session = await getServerSession(authOptions)
 
-   if (!session?.user.email) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-         status: 401,
-      })
-   }
+   // if (!session?.user.email) {
+   //    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+   //       status: 401,
+   //    })
+   // }
 
    const spaceId = req.nextUrl.searchParams.get('spaceId')
    if (!spaceId) {
@@ -88,7 +103,7 @@ export async function GET(req: NextRequest) {
             },
             upVote: {
                where: {
-                  userId: session.user.id,
+                  userId: session?.user.id,
                },
             },
          },

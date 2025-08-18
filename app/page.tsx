@@ -7,7 +7,7 @@ export default function Home() {
    return (
       <main className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
          <AppBar />
-         <Redirect />
+         {/* <Redirect /> */}
          <MainContent />
          <Section />
       </main>

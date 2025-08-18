@@ -1,14 +1,25 @@
 import { getToken } from 'next-auth/jwt'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function middleware(req) {
+export async function middleware(req: NextRequest) {
    const token = await getToken({ req })
    const url = req.nextUrl
 
+   // If no session
    if (!token) {
+      // Guests can only access shareable space
+      if (url.pathname.startsWith('/creator/space/')) {
+         return NextResponse.next()
+      }
       return NextResponse.redirect(new URL('/', req.url))
    }
 
+   // Allow everyone (logged in or not) to view /creator/space/:id
+   if (url.pathname.startsWith('/creator/space/')) {
+      return NextResponse.next()
+   }
+
+   // Redirect root based on role
    if (url.pathname === '/') {
       if (token.role === 'Streamer') {
          return NextResponse.redirect(new URL('/creator', req.url))
@@ -16,12 +27,12 @@ export async function middleware(req) {
          return NextResponse.redirect(new URL('/user', req.url))
       }
    }
-   // If EndUser tries to go to /creator → redirect to /user
+
+   // Role-based protection
    if (url.pathname.startsWith('/creator') && token.role !== 'Streamer') {
       return NextResponse.redirect(new URL('/user', req.url))
    }
 
-   // If Streamer tries to go to /user → redirect to /creator
    if (url.pathname.startsWith('/user') && token.role !== 'EndUser') {
       return NextResponse.redirect(new URL('/creator', req.url))
    }
@@ -30,5 +41,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-   matcher: ['/creator/:path*', '/user/:path*'], // ✅ no /dashboard
+   matcher: ['/creator/:path*', '/user/:path*'],
 }

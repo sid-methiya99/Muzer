@@ -40,7 +40,6 @@ export default function AddSong({
          progress: undefined,
       })
    }
-   console.log(spaceId)
    return (
       <div>
          {/* Add Song Section */}
