@@ -47,6 +47,8 @@ model SongQueue {
     smallImg     String     @default("")
     bigImg       String     @default("")
     extractedId  String
+    played       Boolean    @default(false)
+    playedTs     DateTime?
     Space        Space      @relation(fields: [spaceId], references: [id])
     spaceId      String
     upVote       UpVote[]

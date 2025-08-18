@@ -24,7 +24,6 @@ export function useAddSongMutation(
          const res = await axios.post<any>('/api/spaces/stream', {
             data: { url, spaceId },
          })
-         console.log(res)
          return res.data // Return the response for better type safety
       },
       onSuccess: (data) => {

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Music, Play, Heart } from 'lucide-react'
+import { Music, Play } from 'lucide-react'
 import { Video } from '../lib/types'
 
 import YouTube, { YouTubeEvent, YouTubeProps } from 'react-youtube'
@@ -19,6 +19,7 @@ export default function NowPlaying({
    onPlayNext,
    onStateChange,
 }: NowPlayingProps) {
+   console.log('Inside NowPlaying:', currentVideo)
    return (
       <div className="space-y-3 min-w-sm">
          <div className="w-full flex justify-center">

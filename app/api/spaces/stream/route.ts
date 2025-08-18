@@ -94,6 +94,7 @@ export async function GET(req: NextRequest) {
       const findSongs = await prisma.songQueue.findMany({
          where: {
             spaceId: spaceId,
+            played: false,
          },
          include: {
             _count: {

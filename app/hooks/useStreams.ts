@@ -10,6 +10,6 @@ export function useStreams(streamerId?: string) {
          return await refreshStreams(streamerId)
       },
       enabled: !!streamerId, // ⬅ don’t run until streamerId is truthy
-      // refetchInterval: 1000,
+      refetchInterval: 3000,
    })
 }

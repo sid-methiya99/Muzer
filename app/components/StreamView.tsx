@@ -10,23 +10,29 @@ import NowPlaying from '@/app/components/NowPlaying'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutations'
 import { useStreams } from '../hooks/useStreams'
 import { YouTubeEvent, YouTubeProps } from 'react-youtube'
+import {
+   getCurrentPlayingVideo,
+   useCurrentSong,
+   useMarkSongPlayed,
+} from '../hooks/usePlayNext'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
-   const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
+   const [currentVideoId, setCurrentVideo] = useState<Video | null>(null)
+   const queryClient = useQueryClient()
 
-   const { data: songs, isLoading, error } = useStreams(spaceId ?? '')
+   const { data: songs, isLoading } = useStreams(spaceId ?? '')
    const session = useSession()
-   const router = useRouter()
    const addSongMutation = useAddSongMutation(setInputLink)
    const voteMutation = useVoteMutation(setQueue)
-   // useEffect(() => {
-   //    if (session.status === 'unauthenticated') {
-   //       router.push('/')
-   //    }
-   // }, [session.status, router])
-   //
+
+   const [currentSongId, setCurrentSongId] = useState<string | null>(null)
+
+   const { data: currentVideo } = useCurrentSong(currentSongId || undefined)
+   const markSongPlayed = useMarkSongPlayed()
+
    useEffect(() => {
       if (songs) {
          setQueue(songs)
@@ -35,11 +41,12 @@ export function StreamView({ spaceId }: { spaceId: string }) {
 
    const playNext = () => {
       if (queue.length > 0) {
-         setCurrentVideo(queue[0])
+         const nextId = queue[0].id
+         setCurrentSongId(nextId)
+         markSongPlayed.mutate(nextId) // ✅ marks as played
          setQueue(queue.slice(1))
       }
    }
-
    const onStateChange: YouTubeProps['onStateChange'] = (
       event: YouTubeEvent
    ) => {
