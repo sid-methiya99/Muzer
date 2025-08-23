@@ -19,7 +19,6 @@ export default function NowPlaying({
    onPlayNext,
    onStateChange,
 }: NowPlayingProps) {
-   console.log('Inside NowPlaying:', currentVideo)
    return (
       <div className="space-y-3 min-w-sm">
          <div className="w-full flex justify-center">

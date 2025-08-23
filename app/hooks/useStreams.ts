@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { refreshStreams } from '../lib/getSongs'
+import axios from 'axios'
 
 export function useStreams(streamerId?: string) {
    return useQuery({
@@ -7,9 +7,13 @@ export function useStreams(streamerId?: string) {
       queryFn: async () => {
          if (!streamerId) return []
 
-         return await refreshStreams(streamerId)
+         const res = await axios.get(`/api/spaces/stream?spaceId=${streamerId}`)
+         return res.data
       },
+      select: (res) => ({
+         currentSongs: res.findSongs ?? [],
+         currentPlayingSong: res.findCurrentPlayingSongs ?? {},
+      }),
       enabled: !!streamerId, // ⬅ don’t run until streamerId is truthy
-      refetchInterval: 3000,
    })
 }

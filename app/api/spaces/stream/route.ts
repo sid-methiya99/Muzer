@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
          },
       })
    }
-
+   console.log(data)
    const verifyReceivedData = CreateStreamSchema.safeParse({
       url: receivedData,
       spaceId: receivedSpaceId,
@@ -108,6 +108,16 @@ export async function GET(req: NextRequest) {
                },
             },
          },
+         omit: {
+            playedTs: true,
+         },
+      })
+
+      const findCurrentPlayingSongs = await prisma.songQueue.findFirst({
+         where: {
+            spaceId: spaceId,
+            currentPlaying: true,
+         },
       })
       return NextResponse.json(
          {
@@ -116,6 +126,7 @@ export async function GET(req: NextRequest) {
                upVote: _count.upVote,
                haveVoted: rest.upVote.length ? true : false,
             })),
+            findCurrentPlayingSongs,
          },
          {
             status: 200,

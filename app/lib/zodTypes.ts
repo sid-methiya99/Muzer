@@ -9,6 +9,11 @@ export const CreateSpaceSchema = z.object({
 export const CreateStreamSchema = z.object({
    url: z
       .string()
-      .refine((val) => val.includes('youtube') || val.includes('spotify')),
+      .refine(
+         (val) =>
+            val.includes('youtube') ||
+            val.includes('youtu.be') ||
+            val.includes('spotify')
+      ),
    spaceId: z.string(),
 })
