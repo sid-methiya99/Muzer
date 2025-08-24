@@ -1,19 +1,22 @@
+// In your useStreams hook file
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 
-export function useStreams(streamerId?: string) {
+export const useStreams = (spaceId: string) => {
    return useQuery({
-      queryKey: ['songs', streamerId],
+      queryKey: ['streams', spaceId],
       queryFn: async () => {
-         if (!streamerId) return []
+         const response = await fetch(`/api/spaces/stream?spaceId=${spaceId}`)
+         if (!response.ok) {
+            throw new Error('Failed to fetch streams')
+         }
+         const data = await response.json()
 
-         const res = await axios.get(`/api/spaces/stream?spaceId=${streamerId}`)
-         return res.data
+         return {
+            currentSongs: data.findSongs || [],
+            currentPlayingSong: data.currentPlayingSong || null,
+         }
       },
-      select: (res) => ({
-         currentSongs: res.findSongs ?? [],
-         currentPlayingSong: res.findCurrentPlayingSongs ?? {},
-      }),
-      enabled: !!streamerId, // ⬅ don’t run until streamerId is truthy
+      enabled: !!spaceId,
+      // Remove refetchInterval since we're using optimistic updates
    })
 }

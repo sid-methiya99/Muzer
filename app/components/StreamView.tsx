@@ -10,63 +10,59 @@ import NowPlaying from '@/app/components/NowPlaying'
 import { useAddSongMutation, useVoteMutation } from '../hooks/useMutations'
 import { useStreams } from '../hooks/useStreams'
 import { YouTubeEvent, YouTubeProps } from 'react-youtube'
-import { useMarkSongFinish, useMarkSongPlayed } from '../hooks/usePlayNext'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMarkSongPlayed } from '../hooks/usePlayNext'
+import { da } from 'zod/v4/locales'
 
 export function StreamView({ spaceId }: { spaceId: string }) {
    const [inputLink, setInputLink] = useState('')
    const [queue, setQueue] = useState<Video[]>([])
-   const [currentVideoId, setCurrentVideo] = useState<Video | null>(null)
-
+   const [currentlyPlayingSongId, setCurrentlyPlayingSongId] = useState<
+      string | null
+   >(null)
    const { data, isLoading } = useStreams(spaceId ?? '')
    const session = useSession()
    const addSongMutation = useAddSongMutation(setInputLink)
    const voteMutation = useVoteMutation(setQueue)
-
-   const [currentSongId, setCurrentSongId] = useState<string | null>(null)
-   const [nextSong, setNextSong] = useState()
-   const [previousSong, setPreviousSong] = useState<Video | null>(null)
    const markSongPlayed = useMarkSongPlayed()
-   const markSongFinsih = useMarkSongFinish()
 
    useEffect(() => {
       if (data?.currentSongs) {
          setQueue(data.currentSongs)
       }
-   }, [data?.currentSongs])
+      // Track the currently playing song
+      if (data?.currentPlayingSong) {
+         console.log(data.currentPlayingSong)
+         setCurrentlyPlayingSongId(data.currentPlayingSong.id)
+      }
+   }, [data?.currentSongs, data?.currentPlayingSong])
 
    const playNext = () => {
       if (queue.length === 0) return
 
-      const currentSong = queue[0] // This will become the previous song
-      console.log('Current songId: ', currentSong.id)
-      markSongFinsih.mutate(currentSong.id)
+      const currentSong = queue[0] // The song that's currently at the top of queue
+      console.log('Playing song: ', currentSong.id)
 
-      if (queue.length === 1) {
-         setCurrentSongId(currentSong.id)
-         markSongPlayed.mutate(currentSong.id)
-         setCurrentVideo(currentSong)
-         setPreviousSong(currentSong) // Store as previous
-         setQueue([])
-         return
-      }
+      // Mark this song as played and currently playing
+      markSongPlayed.mutate({
+         songId: currentSong.id,
+         previousSongId: currentlyPlayingSongId || undefined,
+      })
 
-      if (queue.length > 1) {
-         const nextSong = queue[1]
-         console.log('Next Song Id: ', nextSong.id)
-         setCurrentSongId(nextSong.id)
-         setCurrentVideo(nextSong)
-         markSongPlayed.mutate(nextSong.id)
-         setPreviousSong(currentSong)
-         console.log(previousSong?.id)
-      }
+      // Update component state
+      setCurrentlyPlayingSongId(currentSong.id)
+
+      // Remove the played song from the queue
+      setQueue((prevQueue) => prevQueue.slice(1))
+
+      console.log('Remaining queue length:', queue.length - 1)
    }
+
    const onStateChange: YouTubeProps['onStateChange'] = (
       event: YouTubeEvent
    ) => {
       if (event.data === window.YT.PlayerState.ENDED) {
-         setCurrentVideo(queue[0])
-         setQueue(queue.slice(1))
+         // When a song ends, play the next one
+         playNext()
       }
    }
 
@@ -92,7 +88,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                />
 
                <NowPlaying
-                  currentVideo={data?.currentPlayingSong}
+                  currentVideo={data?.currentPlayingSong} // Pass the actual currently playing song
                   queue={queue}
                   onPlayNext={playNext}
                   onStateChange={onStateChange}

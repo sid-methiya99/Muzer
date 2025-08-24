@@ -41,15 +41,13 @@ model Space {
 model SongQueue {
     id             String     @id @default(uuid())
     type           StreamType
-    active         Boolean    @default(true)
     url            String
     title          String     @default("")
     smallImg       String     @default("")
     bigImg         String     @default("")
     extractedId    String
-    played         Boolean    @default(false)
-    playedTs       Int        @default(0)
     currentPlaying Boolean    @default(false)
+    played         Boolean    @default(false)
     Space          Space      @relation(fields: [spaceId], references: [id])
     spaceId        String
     upVote         UpVote[]

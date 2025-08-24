@@ -1,31 +1,42 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import axios from 'axios'
+// In your usePlayNext hook file
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-export function useMarkSongPlayed() {
+export const useMarkSongPlayed = (spaceId?: string) => {
    const queryClient = useQueryClient()
 
    return useMutation({
-      mutationFn: async (songId: string) => {
-         const res = await axios.put(`/api/spaces/stream/next?songId=${songId}`)
-      },
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ['songs'] })
-         console.log('Marked song as played')
-      },
-   })
-}
-export function useMarkSongFinish() {
-   const queryClient = useQueryClient()
+      mutationFn: async ({
+         songId,
+         previousSongId,
+      }: {
+         songId: string
+         previousSongId?: string
+      }) => {
+         const params = new URLSearchParams({ songId })
+         if (previousSongId) {
+            params.append('previousSongId', previousSongId)
+         }
 
-   return useMutation({
-      mutationFn: async (songId: string) => {
-         const res = await axios.put(
-            `/api/spaces/stream/finish?songId=${songId}`
-         )
+         const response = await fetch(`/api/spaces/stream/next?${params}`, {
+            method: 'PUT',
+         })
+
+         if (!response.ok) {
+            throw new Error('Failed to mark song as played')
+         }
+
+         return response.json()
       },
       onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ['songs'] })
-         console.log('Marked song as played')
+         // Invalidate specific query with spaceId
+         if (spaceId) {
+            queryClient.invalidateQueries({ queryKey: ['streams', spaceId] })
+            queryClient.refetchQueries({ queryKey: ['streams', spaceId] })
+         } else {
+            // Fallback to invalidate all streams queries
+            queryClient.invalidateQueries({ queryKey: ['streams'] })
+            queryClient.refetchQueries({ queryKey: ['streams'] })
+         }
       },
    })
 }

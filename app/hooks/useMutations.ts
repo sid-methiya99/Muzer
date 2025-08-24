@@ -24,12 +24,13 @@ export function useAddSongMutation(
          const res = await axios.post<any>('/api/spaces/stream', {
             data: { url, spaceId },
          })
+         console.log(res)
          return res.data // Return the response for better type safety
       },
       onSuccess: (data) => {
          console.log('Added stream successfully', data.data)
          setInputLink('')
-         queryClient.invalidateQueries({ queryKey: ['songs'] })
+         queryClient.invalidateQueries({ queryKey: ['streams'] })
       },
       onError: (error: AxiosError) => {
          console.error(
