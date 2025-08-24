@@ -11,6 +11,7 @@ interface NowPlayingProps {
    queue: Video[]
    onPlayNext: () => void
    onStateChange: (event: YouTubeEvent) => void
+   typeUser: string
 }
 
 export default function NowPlaying({
@@ -18,6 +19,7 @@ export default function NowPlaying({
    queue,
    onPlayNext,
    onStateChange,
+   typeUser,
 }: NowPlayingProps) {
    return (
       <div className="space-y-3 min-w-sm">
@@ -29,7 +31,7 @@ export default function NowPlaying({
 
          <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-lg border border-purple-400/30 shadow-2xl flex items-center justify-center">
             <CardContent>
-               {currentVideo ? (
+               {currentVideo && typeUser === 'Streamer' ? (
                   <div>
                      <div className="relative">
                         <YouTube
@@ -49,6 +51,18 @@ export default function NowPlaying({
                      </div>
                   </div>
                ) : (
+                  currentVideo &&
+                  typeUser === 'EndUser' && (
+                     <div className="text-center py-12 space-y-4">
+                        <img
+                           src={currentVideo?.bigImg}
+                           height="350"
+                           width="450"
+                        />
+                     </div>
+                  )
+               )}
+               {!currentVideo && (
                   <div className="text-center py-12 space-y-4">
                      <div className="w-24 h-24 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto shadow-inner">
                         <Music className="h-12 w-12 text-gray-400" />
@@ -65,15 +79,16 @@ export default function NowPlaying({
                )}
             </CardContent>
          </Card>
-
-         <Button
-            onClick={onPlayNext}
-            disabled={queue.length === 0}
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white text-lg py-6 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 disabled:cursor-not-allowed"
-         >
-            <Play className="mr-2 h-5 w-5" />
-            Play Next {queue.length > 0 && `(${queue.length} in queue)`}
-         </Button>
+         {typeUser === 'Streamer' && (
+            <Button
+               onClick={onPlayNext}
+               disabled={queue.length === 0}
+               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white text-lg py-6 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 disabled:cursor-not-allowed"
+            >
+               <Play className="mr-2 h-5 w-5" />
+               Play Next {queue.length > 0 && `(${queue.length} in queue)`}
+            </Button>
+         )}
       </div>
    )
 }

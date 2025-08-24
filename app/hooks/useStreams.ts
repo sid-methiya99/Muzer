@@ -17,6 +17,7 @@ export const useStreams = (spaceId: string) => {
          }
       },
       enabled: !!spaceId,
+      refetchInterval: 3000,
       // Remove refetchInterval since we're using optimistic updates
    })
 }

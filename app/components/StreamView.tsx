@@ -88,6 +88,7 @@ export function StreamView({ spaceId }: { spaceId: string }) {
                />
 
                <NowPlaying
+                  typeUser={session.data?.user.role}
                   currentVideo={data?.currentPlayingSong} // Pass the actual currently playing song
                   queue={queue}
                   onPlayNext={playNext}
